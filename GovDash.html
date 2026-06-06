@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GovDash | لوحة الامتثال الحكومي للموارد البشرية</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1526;--panel:rgba(14,24,46,.9);--card:rgba(18,28,52,.85);--deep:rgba(22,34,62,.8);
+  --b0:rgba(45,212,191,.08);--b1:rgba(45,212,191,.16);--b2:rgba(45,212,191,.28);
+  --teal:#2dd4bf;--teal2:#14b8a6;--teal3:#0d9488;
+  --blue:#38bdf8;--amber:#fbbf24;--red:#f87171;--green:#34d399;--purple:#c084fc;
+  --t1:#ddeeff;--t2:#6b92b8;--t3:#2d4a6a;
+  --ar:'Cairo',sans-serif;--mono:'JetBrains Mono',monospace;--r:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-size:13px;overflow:hidden;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 8% 15%,rgba(45,212,191,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 92% 85%,rgba(56,189,248,.05) 0%,transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='0' cy='0' r='1' fill='%232dd4bf' fill-opacity='.15'/%3E%3Ccircle cx='40' cy='40' r='1' fill='%2338bdf8' fill-opacity='.1'/%3E%3Ccircle cx='80' cy='0' r='1' fill='%232dd4bf' fill-opacity='.15'/%3E%3Ccircle cx='0' cy='80' r='1' fill='%2338bdf8' fill-opacity='.1'/%3E%3Ccircle cx='80' cy='80' r='1' fill='%232dd4bf' fill-opacity='.15'/%3E%3C/svg%3E");
+}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+.tb{position:relative;z-index:10;height:56px;
+  background:linear-gradient(180deg,rgba(10,18,38,.98),rgba(13,21,40,.95));
+  border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;backdrop-filter:blur(16px)}
+.tb-brand{display:flex;align-items:center;gap:11px}
+.tb-logo{width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--teal3),var(--teal));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;font-weight:700;color:var(--bg);
+  box-shadow:0 0 18px rgba(45,212,191,.45)}
+.tb-name{font-size:14px;font-weight:700;color:var(--teal)}
+.tb-name .sep{color:var(--t3);font-weight:300;margin:0 6px;font-size:12px}
+.tb-name .ar{font-size:12px;font-weight:600;color:var(--t2)}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:1px;letter-spacing:.5px}
+.tb-r{display:flex;align-items:center;gap:9px}
+.sync-btn{display:flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(56,189,248,.08));
+  border:1px solid rgba(45,212,191,.25);border-radius:9px;padding:7px 14px;
+  cursor:pointer;transition:all .22s;color:var(--teal);font-family:var(--ar);font-size:11px;font-weight:700}
+.sync-btn:hover{background:linear-gradient(135deg,rgba(45,212,191,.22),rgba(56,189,248,.14));
+  border-color:var(--teal);box-shadow:0 0 14px rgba(45,212,191,.18)}
+.sync-btn svg{transition:transform .3s}
+.sync-btn.spinning svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(10,16,30,.8);
+  border:1px solid var(--b1);border-radius:20px;padding:5px 12px;
+  font-family:var(--mono);font-size:10px;color:var(--t2);transition:border-color .3s}
+.live-pill.ok{border-color:rgba(52,211,153,.4)}
+.live-pill.err{border-color:rgba(248,113,113,.4)}
+.live-pill.loading{border-color:rgba(251,191,36,.4)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);transition:all .3s}
+.live-pill.ok .live-dot{background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.7);animation:blink 2s infinite}
+.live-pill.err .live-dot{background:var(--red)}
+.live-pill.loading .live-dot{background:var(--amber);animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.co-wrap{position:relative}
+.co-sel{background:rgba(10,16,30,.9);border:1px solid var(--b1);color:var(--t1);
+  font-family:var(--ar);font-size:13px;font-weight:700;padding:7px 14px 7px 30px;
+  border-radius:9px;outline:none;appearance:none;cursor:pointer;direction:rtl;min-width:200px;transition:border-color .2s}
+.co-sel:hover,.co-sel:focus{border-color:var(--teal)}
+.co-sel option{background:#0c1220}
+.co-arr{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--teal);font-size:10px;pointer-events:none}
+.period{display:flex;align-items:center;gap:5px;background:rgba(10,16,30,.8);
+  border:1px solid var(--b0);border-radius:9px;padding:5px 10px}
+.period-lbl{font-size:11px;color:var(--t3)}
+.period-sel{background:transparent;border:none;color:var(--teal);font-family:var(--mono);
+  font-size:11px;font-weight:600;cursor:pointer;outline:none;direction:ltr}
+.period-sel option{background:#080d1a}
+.page{position:relative;z-index:1;height:calc(100vh - 56px);overflow-y:auto;overflow-x:hidden}
+.page::-webkit-scrollbar{width:4px}
+.page::-webkit-scrollbar-thumb{background:var(--teal3);border-radius:2px}
+.wrap{padding:14px 22px;display:flex;flex-direction:column;gap:13px}
+.meta-bar{font-family:var(--mono);font-size:9.5px;color:var(--t3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.meta-bar .ok{color:var(--green)}.meta-bar .sync{color:var(--teal)}.meta-bar .sep{opacity:.4}.meta-bar .err{color:var(--red)}
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.kpi{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--b0);
+  border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:5px;
+  transition:border-color .22s,transform .18s,box-shadow .22s;backdrop-filter:blur(10px)}
+.kpi:hover{transform:translateY(-2px);border-color:var(--b1);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.kpi-acc{position:absolute;top:0;right:0;left:0;height:2px}
+.kpi-glow{position:absolute;bottom:-50px;left:-50px;width:140px;height:140px;border-radius:50%;opacity:.04;transition:opacity .3s;pointer-events:none}
+.kpi:hover .kpi-glow{opacity:.09}
+.kpi-lbl{font-size:12px;font-weight:700;color:var(--t1)}
+.kpi-sub{font-family:var(--mono);font-size:7.5px;color:var(--t3);letter-spacing:.6px;text-transform:uppercase}
+.kpi-val{font-family:var(--mono);font-size:32px;font-weight:600;line-height:1;margin:4px 0 2px}
+.kpi-rows{display:flex;flex-direction:column;gap:3px}
+.krow{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.krow-l{color:var(--t2)}.krow-v{font-family:var(--mono);font-size:11px;font-weight:600}
+.kpi.warn{border-color:rgba(251,191,36,.18)!important}
+.ct{color:var(--teal)}.cb{color:var(--blue)}.ca{color:var(--amber)}.cr{color:var(--red)}.cg{color:var(--green)}.cp{color:var(--purple)}
+.sec{display:flex;align-items:center;gap:13px}
+.sec-txt .ar{font-size:13px;font-weight:700;color:var(--t1)}
+.sec-txt .en{font-family:var(--mono);font-size:7.5px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--b1),transparent)}
+.plat-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.plat{background:var(--card);border:1px solid var(--b0);border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;transition:border-color .2s;backdrop-filter:blur(8px)}
+.plat:hover{border-color:var(--b1)}
+.plat-top{display:flex;align-items:center;justify-content:space-between}
+.plat-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--t1)}
+.plat-ent{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--teal)}
+.pill{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:2px 8px;border-radius:20px}
+.p-ok{background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.25)}
+.p-no{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.p-warn{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.p-na{background:rgba(45,74,106,.1);color:var(--t3);border:1px solid rgba(45,74,106,.2)}
+.plat-bar{display:flex;align-items:center;gap:6px}
+.plat-trk{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.plat-fill{height:100%;border-radius:2px;transition:width .9s ease}
+.plat-pct{font-family:var(--mono);font-size:11px;font-weight:600}
+.g3{display:grid;grid-template-columns:1fr 1.55fr 1fr;gap:10px}
+.g2{display:grid;grid-template-columns:1.3fr 1fr;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--b0);border-radius:var(--r);padding:15px 17px;display:flex;flex-direction:column;gap:11px;backdrop-filter:blur(10px)}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--b0)}
+.ph .ar{font-size:13px;font-weight:700;color:var(--t1)}
+.ph .en{font-family:var(--mono);font-size:7.5px;color:var(--t3);margin-top:2px;letter-spacing:.5px}
+.badge{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px}
+.bt{background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.22)}
+.bb{background:rgba(56,189,248,.1);color:var(--blue);border:1px solid rgba(56,189,248,.22)}
+.mc4{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mcard{background:var(--deep);border:1px solid var(--b0);border-radius:9px;padding:9px 11px}
+.mcard .lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.mcard .sub{font-family:var(--mono);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.mcard .val{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1}
+.rbar{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.rbar:last-child{margin-bottom:0}
+.rbar-head{display:flex;justify-content:space-between;align-items:baseline}
+.rbar .ar{font-size:12px;font-weight:700;color:var(--t1)}
+.rbar .en{font-family:var(--mono);font-size:7.5px;color:var(--t3)}
+.rbar-pct{font-family:var(--mono);font-size:15px;font-weight:600}
+.rbar-trk{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.rbar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.wt{width:100%;border-collapse:collapse;font-size:11px}
+.wt thead{background:rgba(18,28,54,.6)}
+.wt th{padding:9px 8px;font-size:8.5px;font-weight:600;color:var(--t2);text-align:right;border-bottom:1px solid var(--b1);white-space:nowrap}
+.wt th span{font-family:var(--mono);font-size:7px;color:var(--t3);display:block;margin-top:1px}
+.wt td{padding:9px 8px;border-bottom:1px solid var(--b0);vertical-align:middle}
+.wt tr:nth-child(even) td{background:rgba(18,28,54,.25)}
+.wt tr:hover td{background:rgba(45,212,191,.04)}
+.wt tr:last-child td{border-bottom:none}
+.ent-nm{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--t1)}
+.num{font-family:var(--mono);font-size:13px;font-weight:600;text-align:center}
+.dt{font-family:var(--mono);font-size:10px;color:var(--t2)}
+.iq6{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.iqcard{background:var(--deep);border:1px solid var(--b0);border-radius:9px;padding:8px;text-align:center;transition:border-color .18s}
+.iqcard:hover{border-color:var(--b1)}
+.iqcard .n{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1}
+.iqcard .ar{font-size:9px;color:var(--t2);margin-top:4px}
+.iqcard .en{font-family:var(--mono);font-size:7px;color:var(--t3);letter-spacing:.4px;margin-top:1px}
+.srow{display:flex;align-items:flex-start;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b0);gap:6px}
+.srow:last-child{border-bottom:none}
+.srow .lbl{display:flex;flex-direction:column;gap:1px}
+.srow .ar{font-size:12px;color:var(--t2)}.srow .en{font-family:var(--mono);font-size:7.5px;color:var(--t3)}
+.srow .v{font-family:var(--mono);font-size:14px;font-weight:600}
+.ek2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ecard{background:var(--deep);border:1px solid var(--b0);border-radius:9px;padding:9px 11px}
+.ecard .lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.ecard .val{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1}
+.erow{background:rgba(18,28,54,.5);border:1px solid var(--b0);border-radius:9px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center}
+.erow .lbl{font-size:10px;color:var(--t2)}
+.erow .val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--teal)}
+.nat{display:flex;flex-direction:column;gap:12px}
+.nat-r{display:flex;flex-direction:column;gap:5px}
+.nat-h{display:flex;justify-content:space-between;align-items:baseline}
+.nat-lbl{font-size:13px;font-weight:700;color:var(--t1)}
+.nat-pct{font-family:var(--mono);font-size:17px;font-weight:600}
+.nat-trk{height:18px;background:rgba(255,255,255,.05);border-radius:9px;overflow:hidden}
+.nat-fill{height:100%;border-radius:9px;display:flex;align-items:center;padding-left:11px;transition:width 1s ease}
+.nat-cnt{font-family:var(--mono);font-size:11px;font-weight:600;color:rgba(255,255,255,.85);margin-right:auto;padding-left:11px}
+.nat-foot{display:flex;gap:16px;padding-top:11px;border-top:1px solid var(--b0);margin-top:2px}
+.nf .lbl{font-size:10px;color:var(--t2)}.nf .val{font-family:var(--mono);font-size:22px;font-weight:600}
+.act-g{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.acard{background:var(--panel);border:1px solid var(--b0);border-radius:var(--r);overflow:hidden;transition:border-color .2s;backdrop-filter:blur(8px)}
+.acard:hover{border-color:var(--b1)}
+.acard-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(18,28,54,.55);border-bottom:1px solid var(--b0)}
+.acard-co{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--teal)}
+.acard-cnt{font-family:var(--mono);font-size:9px;color:var(--t3);background:rgba(18,28,54,.8);padding:2px 7px;border-radius:8px}
+.acard-body{display:flex;flex-direction:column}
+.aitem{display:flex;align-items:flex-start;gap:9px;padding:9px 14px;border-bottom:1px solid var(--b0);transition:background .15s}
+.aitem:last-child{border-bottom:none}
+.aitem:hover{background:rgba(45,212,191,.03)}
+.sev-d{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.sev-d.h{background:var(--red);box-shadow:0 0 6px rgba(248,113,113,.55)}
+.sev-d.m{background:var(--amber);box-shadow:0 0 4px rgba(251,191,36,.35)}
+.sev-d.l{background:var(--blue)}
+.aitem-b{flex:1;display:flex;flex-direction:column;gap:4px}
+.aitem-t{font-size:11.5px;color:var(--t1);line-height:1.65}
+.atags{display:flex;align-items:center;gap:5px;margin-top:1px}
+.asev{font-family:var(--mono);font-size:8px;font-weight:600;padding:1px 7px;border-radius:8px}
+.asev.h{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.asev.m{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.asev.l{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.25)}
+.atag{font-family:var(--mono);font-size:8px;color:var(--t3);background:rgba(18,28,54,.8);padding:1px 6px;border-radius:4px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.kpi{animation:fadeUp .32s ease both}
+.kpi:nth-child(1){animation-delay:.04s}.kpi:nth-child(2){animation-delay:.08s}
+.kpi:nth-child(3){animation-delay:.12s}.kpi:nth-child(4){animation-delay:.16s}.kpi:nth-child(5){animation-delay:.20s}
+.panel,.plat,.acard{animation:fadeUp .3s ease both}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div class="tb">
+  <div class="tb-brand">
+    <div class="tb-logo">G</div>
+    <div>
+      <div class="tb-name">GovDash<span class="sep">|</span><span class="ar">لوحة الامتثال الحكومي للموارد البشرية</span></div>
+      <div class="tb-sub">HR GOVERNMENT COMPLIANCE · GOSI · QIWA · MUDAD · MUQEEM · CHAMBER</div>
+    </div>
+  </div>
+  <div class="tb-r">
+    <div class="live-pill loading" id="livePill"><div class="live-dot" id="liveDot"></div><span id="liveTxt">جاري الاتصال...</span></div>
+    <button class="sync-btn" id="syncBtn" onclick="fetchSheet()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+      تحديث
+    </button>
+    <div class="co-wrap">
+      <select class="co-sel" id="coSel" onchange="onCo()"><option value="all">جميع الكيانات</option></select>
+      <span class="co-arr">▾</span>
+    </div>
+    <div class="period">
+      <span class="period-lbl">الفترة</span>
+      <select class="period-sel" id="mpM">
+        <option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option>
+        <option>May</option><option>Jun</option><option>Jul</option><option>Aug</option>
+        <option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option>
+      </select>
+      <span style="color:var(--t3)">/</span>
+      <select class="period-sel" id="mpY"></select>
+    </div>
+  </div>
+</div>
+<div class="page" id="pg">
+<div class="wrap">
+  <div class="meta-bar" id="metaBar">—</div>
+  <div class="kpi-strip">
+    <div class="kpi" style="color:var(--teal)">
+      <div class="kpi-acc" style="background:linear-gradient(90deg,var(--teal3),var(--teal),transparent)"></div>
+      <div class="kpi-glow" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">إجمالي الموظفين</div><div class="kpi-sub">TOTAL EMPLOYEES · GOSI</div>
+      <div class="kpi-val ct" id="kEmp">—</div>
+      <div class="kpi-rows">
+        <div class="krow"><span class="krow-l">سعودي</span><span class="krow-v ct" id="kS">—</span></div>
+        <div class="krow"><span class="krow-l">غير سعودي</span><span class="krow-v cb" id="kN">—</span></div>
+      </div></div>
+    <div class="kpi" style="color:var(--blue)">
+      <div class="kpi-acc" style="background:linear-gradient(90deg,#0369a1,var(--blue),transparent)"></div>
+      <div class="kpi-glow" style="background:var(--blue)"></div>
+      <div class="kpi-lbl">العقود الموثّقة</div><div class="kpi-sub">ATTESTED CONTRACTS · QIWA</div>
+      <div class="kpi-val cb" id="kAtt">—</div>
+      <div class="kpi-rows">
+        <div class="krow"><span class="krow-l">غير موثّق</span><span class="krow-v cr" id="kUn">—</span></div>
+        <div class="krow"><span class="krow-l">الفارق GOSI/Qiwa</span><span class="krow-v ca" id="kDiff">—</span></div>
+      </div></div>
+    <div class="kpi" style="color:var(--green)">
+      <div class="kpi-acc" style="background:linear-gradient(90deg,#065f46,var(--green),transparent)"></div>
+      <div class="kpi-glow" style="background:var(--green)"></div>
+      <div class="kpi-lbl">الإقامات الفعّالة</div><div class="kpi-sub">ACTIVE IQAMAS · MUQEEM</div>
+      <div class="kpi-val cg" id="kIq">—</div>
+      <div class="kpi-rows">
+        <div class="krow"><span class="krow-l">منتهية</span><span class="krow-v cr" id="kEiq">—</span></div>
+        <div class="krow"><span class="krow-l">تنتهي &lt;30 يوم</span><span class="krow-v ca" id="kNiq">—</span></div>
+      </div></div>
+    <div class="kpi warn" style="color:var(--amber)">
+      <div class="kpi-acc" style="background:linear-gradient(90deg,#78350f,var(--amber),transparent)"></div>
+      <div class="kpi-glow" style="background:var(--amber)"></div>
+      <div class="kpi-lbl">تصاريح تتطلب إجراء</div><div class="kpi-sub">WORK PERMITS · ACTION REQUIRED</div>
+      <div class="kpi-val ca" id="kWP">—</div>
+      <div class="kpi-rows">
+        <div class="krow"><span class="krow-l">إصدار معلّق</span><span class="krow-v ca" id="kWPi">—</span></div>
+        <div class="krow"><span class="krow-l">تنتهي قريباً</span><span class="krow-v cr" id="kWPe">—</span></div>
+      </div></div>
+    <div class="kpi" style="color:var(--purple)">
+      <div class="kpi-acc" style="background:linear-gradient(90deg,#581c87,var(--purple),transparent)"></div>
+      <div class="kpi-glow" style="background:var(--purple)"></div>
+      <div class="kpi-lbl">الكيانات النشطة</div><div class="kpi-sub">ACTIVE ENTITIES · GOSI</div>
+      <div class="kpi-val cp" id="kAct">—</div>
+      <div class="kpi-rows">
+        <div class="krow"><span class="krow-l">غير نشطة</span><span class="krow-v ca" id="kIn">—</span></div>
+      </div></div>
+  </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">تغطية المنصات الحكومية</div><div class="en">PLATFORM COVERAGE</div></div><div class="sec-line"></div></div>
+  <div class="plat-strip" id="platStrip"></div>
+  <div class="sec"><div class="sec-txt"><div class="ar">تفاصيل الامتثال</div><div class="en">COMPLIANCE DETAILS</div></div><div class="sec-line"></div></div>
+  <div class="g3">
+    <div class="panel">
+      <div class="ph"><div><div class="ar">Qiwa — عقود العمل</div><div class="en">CONTRACT COMPLIANCE</div></div><span class="badge bt" id="qScope">الكل</span></div>
+      <div class="mc4" id="qGrid"></div><div id="qBars"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div><div class="ar">تصاريح العمل</div><div class="en">WORK PERMITS · MINISTRY OF HR</div></div><span class="badge bb">وزارة الموارد</span></div>
+      <div style="overflow-x:auto"><table class="wt"><thead><tr>
+        <th>الكيان<span>Entity</span></th><th>إصدار معلّق<span>Pending</span></th>
+        <th>إجراء مطلوب<span>Action</span></th><th>تنتهي &lt;30ي<span>Exp&lt;30d</span></th>
+        <th>منتهية<span>Expired</span></th><th>تاريخ انتهاء الاشتراك<span>Sub.Expiry</span></th>
+      </tr></thead><tbody id="wpBody"></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div><div class="ar">مقيم</div><div class="en">MUQEEM · IQAMA STATUS</div></div><span class="badge bt" id="mBdg">—</span></div>
+      <div class="iq6" id="iqG"></div><div id="mStats"></div>
+      <div style="border-top:1px solid var(--b0);padding-top:9px">
+        <div style="font-family:var(--mono);font-size:8.5px;font-weight:600;color:var(--teal);letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px">Mudad · مدد</div>
+        <div id="mudadS"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">توزيع الموظفين والجنسيات</div><div class="en">WORKFORCE ANALYTICS</div></div><div class="sec-line"></div></div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY · GOSI</div></div></div><div id="empSec"></div></div>
+    <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION BREAKDOWN</div></div></div><div id="natWrap"></div></div>
+  </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;font-weight:400;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED NOTES</div></div><div class="sec-line"></div></div>
+  <div id="actContainer"></div>
+</div>
+</div>
+<script>
+(()=>{const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');let W,H,pts=[];
+const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
+const init=()=>{pts=[];const n=Math.floor(W*H/22000);
+  for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,
+    r:Math.random()*1.4+.3,a:Math.random()*.45+.08,hue:Math.random()>.55?174:198})};
+const draw=()=>{ctx.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+    if(d<130){ctx.beginPath();ctx.strokeStyle=`rgba(45,212,191,${(1-d/130)*.05})`;
+      ctx.lineWidth=.5;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke()}}
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${p.hue},65%,68%,${p.a})`;ctx.fill();
+    p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});
+  requestAnimationFrame(draw)};
+addEventListener('resize',()=>{resize();init()});resize();init();draw();})();
+
+/* ══ CONFIG ══ */
+const SHEET_ID = '1lfyt_xuvYMacAL0zUvaudgxF-Qv-1SSCQNMoA0VpBWM';
+const POLL_MS  = 60000; // تحديث تلقائي كل دقيقة
+const FALLBACK = [
+  {
+    "id": "THG",
+    "name": "THG",
+    "gosi": 7,
+    "saudis": 4,
+    "nonSaudi": 3,
+    "qiwaTotal": 7,
+    "attested": 7,
+    "unattested": 0,
+    "activeCont": 13,
+    "diff": 5,
+    "qiwaStatus": "Active",
+    "scope": "High Green",
+    "caRate": 86,
+    "wpRate": 100,
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "23/04/2027",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Active",
+    "activeIqamas": 3,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 1,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "h",
+        "t": "يوجد 5 عقود في منصة قوى لموظفين انتهت علاقتهم الوظيفية بالشركة، إلا أن عقودهم لا تزال نشطة."
+      },
+      {
+        "s": "h",
+        "t": "يوجد عقد نشط للسيد علاء عبدات رغم نقل خدماته إلى شركة المميزة، كما أن لديه عقدًا نشطًا آخر لدى الشركة المنقول إليها."
+      },
+      {
+        "s": "m",
+        "t": "عقد الرئيس التنفيذي يحتاج إلى تحديث."
+      },
+      {
+        "s": "m",
+        "t": "يلزم التحقق من وضع السيد محمد عبد الحميد للتأكد من حالته الوظيفية الصحيحة."
+      }
+    ]
+  },
+  {
+    "id": "TMSS",
+    "name": "TMSS",
+    "gosi": 12,
+    "saudis": 7,
+    "nonSaudi": 5,
+    "qiwaTotal": 12,
+    "attested": 12,
+    "unattested": 0,
+    "activeCont": 42,
+    "diff": 30,
+    "qiwaStatus": "Active",
+    "scope": "Platinum",
+    "caRate": 100,
+    "wpRate": 100,
+    "permitIssuance": 2,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "23/04/2027",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 5,
+    "expiredIq": 1,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 1,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "h",
+        "t": "يوجد 30 عقدًا نشطًا في منصة قوى لموظفين انتهت علاقتهم الوظيفية بالشركة، إلا أن عقودهم لا تزال نشطة على المنصة."
+      },
+      {
+        "s": "m",
+        "t": "يوجد 8 عقود تحتاج إلى تحديث على المنصة : مهند عبدالرحيم - فتحي ياسر -  شميم الدين -  رفيق احمد - بندر المورعي  تحديث الاجر في عقد قوى ."
+      },
+      {
+        "s": "m",
+        "t": "عبد المجيد نافع - عمر الغامدي - تحديث النسخة للعقد"
+      },
+      {
+        "s": "m",
+        "t": "فهد ابو الحمايل - وديع سعد كاتب - علي عاتي - ابراهيم الغامدي - سامي سعدالله - يوسف المطيري - مازن المولد - ايمن الشريف -  ثامر القرشي - عبدالله القرشي - طارق احمد -  لؤي البغدادي - رهف الغامدي - فهد السرواني - الحسن البار - حمد العيسى - ايمن صائغ -  عبدالعزيز معروف - روان المولد - محمد البلوي - عهد الحويطي - سعد العباد - روان الطويرقي - بدور مدني - رهام شيبان - غاية مناسر - هديل كاظم - عمر محمد سعيد -"
+      }
+    ]
+  },
+  {
+    "id": "Daem-JED",
+    "name": "Daem- JED",
+    "gosi": 187,
+    "saudis": 2,
+    "nonSaudi": 185,
+    "qiwaTotal": 4,
+    "attested": 4,
+    "unattested": 0,
+    "activeCont": 65,
+    "diff": 61,
+    "qiwaStatus": "Active",
+    "scope": "Platinum",
+    "caRate": 100,
+    "wpRate": 99,
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "27/04/2026",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "h",
+        "t": "يوجد اختلاف بين عدد الموظفين المسجلين في التأمينات الاجتماعية (GOSI) وعدد العقود المسجلة في منصة قوى."
+      }
+    ]
+  },
+  {
+    "id": "Daem-JED-branch",
+    "name": "Daem- JED - branch",
+    "gosi": 1,
+    "saudis": 1,
+    "nonSaudi": 0,
+    "qiwaTotal": 5,
+    "attested": 4,
+    "unattested": 0,
+    "activeCont": 5,
+    "diff": 0,
+    "qiwaStatus": "Active",
+    "scope": "Small Green (Category A)",
+    "caRate": 100,
+    "wpRate": 99,
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "27/04/2026",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "h",
+        "t": "يوجد اختلاف بين عدد الموظفين المسجلين في التأمينات الاجتماعية (GOSI) وعدد العقود المسجلة في منصة قوى."
+      },
+      {
+        "s": "m",
+        "t": "يجري العمل حاليًا على التحقق من العقود ومطابقتها وتسويتها."
+      }
+    ]
+  },
+  {
+    "id": "Daem-RUH",
+    "name": "Daem- RUH",
+    "gosi": 32,
+    "saudis": 27,
+    "nonSaudi": 5,
+    "qiwaTotal": 218,
+    "attested": 181,
+    "unattested": 2,
+    "activeCont": 218,
+    "diff": 37,
+    "qiwaStatus": "Active",
+    "scope": "Medium Green",
+    "caRate": 100,
+    "wpRate": 99,
+    "permitIssuance": 9,
+    "wpAction": 8,
+    "expLt30": 1,
+    "expired": 0,
+    "wpExpiry": "27/04/2026",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 1,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": []
+  },
+  {
+    "id": "Daem-KHB",
+    "name": "Daem- KHB",
+    "gosi": 1,
+    "saudis": 1,
+    "nonSaudi": 0,
+    "qiwaTotal": 27,
+    "attested": 25,
+    "unattested": 0,
+    "activeCont": 27,
+    "diff": 2,
+    "qiwaStatus": "Active",
+    "scope": "Medium Green",
+    "caRate": 100,
+    "wpRate": 99,
+    "permitIssuance": 0,
+    "wpAction": 2,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "27/04/2026",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "m",
+        "t": "يوجد 24 موظفًا مسجلة عقودهم في منصة قوى ضمن فرع الرياض، بينما هم مسجلون في التأمينات الاجتماعية (GOSI) تحت الفرع الرئيسي."
+      },
+      {
+        "s": "h",
+        "t": "يوجد موظفان بعقود نشطة في الفرع، لكنهما غير مسجلين في التأمينات الاجتماعية (GOSI)."
+      }
+    ]
+  },
+  {
+    "id": "Al-Mumayaza",
+    "name": "Al-Mumayaza",
+    "gosi": 5,
+    "saudis": 3,
+    "nonSaudi": 2,
+    "qiwaTotal": 5,
+    "attested": 5,
+    "unattested": 0,
+    "activeCont": 0,
+    "diff": 0,
+    "qiwaStatus": "Active",
+    "scope": "Small Green (Category A)",
+    "caRate": 100,
+    "wpRate": 100,
+    "permitIssuance": 2,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "21/04/2027",
+    "mudadStatus": "Active",
+    "mudadCompliance": 100,
+    "mudadViol": "None",
+    "muqeemStatus": "Active",
+    "activeIqamas": 2,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": [
+      {
+        "s": "l",
+        "t": "احمد"
+      }
+    ]
+  },
+  {
+    "id": "Mostdam",
+    "name": "Mostdam",
+    "gosi": "N/A",
+    "saudis": "N/A",
+    "nonSaudi": "N/A",
+    "qiwaTotal": 0,
+    "attested": 0,
+    "unattested": 0,
+    "activeCont": 0,
+    "diff": 0,
+    "qiwaStatus": "Inactive",
+    "scope": "N/A",
+    "caRate": "N/A",
+    "wpRate": "N/A",
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "N/A",
+    "mudadStatus": "Inactive",
+    "mudadCompliance": "N/A",
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": []
+  },
+  {
+    "id": "Modern-Baggage",
+    "name": "Modern Baggage",
+    "gosi": 32,
+    "saudis": 28,
+    "nonSaudi": 4,
+    "qiwaTotal": 31,
+    "attested": 31,
+    "unattested": 0,
+    "activeCont": 0,
+    "diff": 0,
+    "qiwaStatus": "Active",
+    "scope": "Platinum",
+    "caRate": 100,
+    "wpRate": 100,
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "23/04/2027",
+    "mudadStatus": "Inactive",
+    "mudadCompliance": "N/A",
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Active",
+    "acts": []
+  },
+  {
+    "id": "Nassem",
+    "name": "Nassem",
+    "gosi": "N/A",
+    "saudis": "N/A",
+    "nonSaudi": "N/A",
+    "qiwaTotal": 0,
+    "attested": 0,
+    "unattested": 0,
+    "activeCont": 0,
+    "diff": 0,
+    "qiwaStatus": "N/A",
+    "scope": "N/A",
+    "caRate": "N/A",
+    "wpRate": "N/A",
+    "permitIssuance": 0,
+    "wpAction": 0,
+    "expLt30": 0,
+    "expired": 0,
+    "wpExpiry": "N/A",
+    "mudadStatus": "Inactive",
+    "mudadCompliance": "N/A",
+    "mudadViol": "None",
+    "muqeemStatus": "Inactive",
+    "activeIqamas": 0,
+    "expiredIq": 0,
+    "iqLt30": 0,
+    "iqLt60": 0,
+    "expiredIqRen": 0,
+    "exitReEntry": 0,
+    "chamberStatus": "Inactive",
+    "acts": [
+      {
+        "s": "l",
+        "t": "لم يتم تفعيل جميع المنصات بعد."
+      }
+    ]
+  }
+];
+
+/* ══ COLUMN MAP (verified from actual Excel)
+  Row0=merged headers, Row1=sub-headers, Row2+=data
+  col0=Company  col1=GOSI  col2=Saudis  col3=NonSaudi
+  col5=QiwaTotal  col8=Attested  col9=Unattested
+  col10=ActiveCont  col11=Diff  col12=QiwaStatus  col13=Scope
+  col14=CARate(0-1)  col15=WPRate(0-1)
+  col17=PermitIssuance  col18=WPAction  col19=ExpLt30
+  col22=Expired  col23=WPExpiry
+  col24=MudadStatus  col25=MudadComp(0-1)
+  col27=MuqeemStatus  col28=ActiveIqamas  col29=ExpiredIq
+  col30=IqLt30  col31=IqLt60  col32=ExpiredIqRen  col33=ExitReEntry
+  col34=ChamberStatus  col35=Notes  col36=ActionItems
+══ */
+const ID_MAP={
+  'THG':'THG','TMSS':'TMSS','Daem- JED':'Daem-JED',
+  'Daem- JED - branch':'Daem-JED-branch','Daem- RUH':'Daem-RUH',
+  'Daem- KHB':'Daem-KHB','Al-Mumayaza':'Al-Mumayaza','Mostdam':'Mostdam',
+  'Modern Baggage':'Modern-Baggage','Nassem':'Nassem','Nassem ':'Nassem'
+};
+const NUM=new Set([1,2,3,5,8,9,10,11,17,18,19,20,21,22,28,29,30,31,32,33]);
+const PCT=new Set([14,15,25]);
+
+function parseGvizRows(tbl){
+  // Google gviz returns table with cols and rows
+  // rows[0] = merged header, rows[1] = sub-header, rows[2+] = data
+  const rawRows = tbl.rows || [];
+  const cols = tbl.cols || [];
+  const numCols = cols.length;
+
+  // Convert gviz rows to plain arrays
+  const rows = rawRows.map(r =>
+    (r.c || []).map(cell => (cell && cell.v !== null && cell.v !== undefined) ? cell.v : '')
+  );
+
+  return parseRowArrays(rows);
+}
+
+function parseCSVRows(csvText){
+  const lines = csvText.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const rows = lines.map(l => {
+    const f=[]; let c='',q=false;
+    for(let i=0;i<l.length;i++){
+      if(l[i]==='"'){q=!q;continue;}
+      if(l[i]===','&&!q){f.push(c.trim());c='';}else c+=l[i];
+    }
+    f.push(c.trim()); return f;
+  });
+  return parseRowArrays(rows);
+}
+
+function parseRowArrays(rows){
+  // Find data start
+  let start=0;
+  const skip=new Set(['campany','company','','nan','undefined','null','gosi','qiwa','mudad','muqeem','chamber','notes']);
+  for(let i=0;i<Math.min(rows.length,5);i++){
+    const v=String(rows[i][0]||'').trim().toLowerCase();
+    if(v&&!skip.has(v)){start=i;break;}
+  }
+
+  function gf(row,idx){
+    const v=row[idx];
+    if(v===undefined||v===null||v==='')return 'N/A';
+    const s=String(v).trim();
+    if(!s||s==='N/A'||s.toLowerCase()==='nan')return 'N/A';
+    if(PCT.has(idx)){
+      const c=s.replace('%',''); const n=parseFloat(c);
+      if(isNaN(n))return 'N/A';
+      return s.includes('%')?Math.round(n):(n<=1.0?Math.round(n*100):Math.round(n));
+    }
+    if(NUM.has(idx)){const n=parseFloat(s);return isNaN(n)?0:Math.round(n);}
+    return s;
+  }
+
+  function getNotes(row){
+    const acts=[];
+    [35,36,37,38].forEach(idx=>{
+      const v=String(row[idx]||'').trim();
+      if(!v||v==='nan'||v==='N/A')return;
+      v.split('\n').forEach(line=>{
+        line=line.trim().replace(/^\*+/,'').trim();
+        if(line.length<4)return;
+        const s=line.match(/فور|غير مسجل|اختلاف|انتهت|إجراء|نشطًا/)?'h':
+                 line.match(/تحديث|تحقق|مطابقة|يوجد|يجري|يستلزم|تحتاج|يلزم/)?'m':'l';
+        acts.push({s,t:line});
+      });
+    });
+    return acts;
+  }
+
+  const out=[];
+  for(let i=start;i<rows.length;i++){
+    const row=rows[i];
+    const nm=String(row[0]||'').trim();
+    if(!nm||nm==='nan')continue;
+    const rid=ID_MAP[nm]||nm.replace(/\s+/g,'-');
+    out.push({
+      id:rid,name:nm,
+      gosi:gf(row,1),saudis:gf(row,2),nonSaudi:gf(row,3),
+      qiwaTotal:gf(row,5),attested:gf(row,8),unattested:gf(row,9),
+      activeCont:gf(row,10),diff:gf(row,11),
+      qiwaStatus:gf(row,12),scope:gf(row,13),
+      caRate:gf(row,14),wpRate:gf(row,15),
+      permitIssuance:gf(row,17),wpAction:gf(row,18),
+      expLt30:gf(row,19),expired:gf(row,22),wpExpiry:gf(row,23),
+      mudadStatus:gf(row,24),mudadCompliance:gf(row,25),mudadViol:'None',
+      muqeemStatus:gf(row,27),
+      activeIqamas:gf(row,28),expiredIq:gf(row,29),
+      iqLt30:gf(row,30),iqLt60:gf(row,31),
+      expiredIqRen:gf(row,32),exitReEntry:gf(row,33),
+      chamberStatus:gf(row,34),
+      acts:getNotes(row)
+    });
+  }
+  return out;
+}
+
+/* ══ FETCH FROM GOOGLE SHEETS ══ */
+let _pollTimer=null, _lastHash='';
+
+async function fetchSheet(){
+  const btn=document.getElementById('syncBtn');
+  if(btn) btn.classList.add('spinning');
+  setStatus('loading','جاري القراءة من Google Sheets...');
+
+  // Try gviz JSON first (most reliable for public sheets)
+  const gvizURL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Government%20Platforms%20-%20one%20driv&t=${Date.now()}`;
+  const csvURL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1928369240&t=${Date.now()}`;
+  const csvURL2 = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
+
+  let parsed = null;
+
+  // Try gviz
+  try {
+    const res = await fetch(gvizURL);
+    const raw = await res.text();
+    if(raw.includes('setResponse') || raw.includes('"status":"ok"')){
+      const json_str = raw.substring(raw.indexOf('{'), raw.lastIndexOf('}')+1);
+      const data = JSON.parse(json_str);
+      if(data.table) { parsed = parseGvizRows(data.table); }
+    }
+  } catch(e){}
+
+  // Try CSV export if gviz failed
+  if(!parsed || !parsed.length){
+    for(const url of [csvURL, csvURL2]){
+      try{
+        const res = await fetch(url);
+        const text = await res.text();
+        if(text && text.length > 100){
+          parsed = parseCSVRows(text);
+          if(parsed && parsed.length) break;
+        }
+      }catch(e){}
+    }
+  }
+
+  if(btn) btn.classList.remove('spinning');
+
+  if(parsed && parsed.length){
+    const h = JSON.stringify(parsed);
+    if(h !== _lastHash){
+      _lastHash = h;
+      applyData(parsed, 'Google Sheets');
+    } else {
+      setStatus('ok', 'لا تغييرات — ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+    }
+  } else {
+    // Fallback to embedded data
+    if(!co.length){
+      applyData(FALLBACK.map(r=>({...r})), 'بيانات محفوظة');
+    }
+    setStatus('err','تعذّر الاتصال بـ Google Sheets — بيانات محفوظة');
+  }
+}
+
+function setStatus(state, msg){
+  const pill=document.getElementById('livePill');
+  const span=document.getElementById('liveTxt');
+  if(!pill||!span)return;
+  pill.className='live-pill '+state;
+  span.textContent=msg;
+}
+
+function applyData(data, src=''){
+  co=data;
+  const sel=document.getElementById('coSel'),prev=sel.value;
+  sel.innerHTML='<option value="all">جميع الكيانات</option>';
+  co.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+  if(co.find(c=>c.id===prev))sel.value=prev;else{sel.value='all';cur='all';}
+  const now=new Date();
+  const ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const ds=now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  setStatus('ok', ts);
+  const meta=document.getElementById('metaBar');
+  if(meta) meta.innerHTML=`<span>${ds}</span><span class="sep">|</span><span class="ok">✓ متصل بـ Google Sheets</span><span class="sep">|</span><span class="sync">آخر تحديث: ${ts}</span>`;
+  renderAll();
+}
+
+let co=[],cur='all',empCh,natCh;
+const $=id=>document.getElementById(id);
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+const ns=(a,k)=>a.reduce((t,c)=>{const v=c[k];return t+(typeof v==='number'?v:0);},0);
+const gD=()=>cur==='all'?co:co.filter(c=>c.id===cur);
+const pN=v=>(!v||v==='N/A')?0:parseFloat(v)||0;
+const av=a=>{const n=a.map(pN).filter(x=>x>0);return n.length?Math.round(n.reduce((a,b)=>a+b)/n.length):0;};
+
+Chart.defaults.color='#2d4a6a';Chart.defaults.borderColor='rgba(45,212,191,.08)';
+Chart.defaults.font.size=10;Chart.defaults.font.family="'JetBrains Mono',monospace";
+const TT={backgroundColor:'rgba(5,8,15,.97)',borderColor:'rgba(45,212,191,.22)',borderWidth:1,titleColor:'#ddeeff',bodyColor:'#6b92b8',padding:12,cornerRadius:8};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const n=new Date();$('mpM').selectedIndex=n.getMonth();
+  const my=$('mpY');
+  for(let y=n.getFullYear()-2;y<=n.getFullYear()+3;y++){
+    const o=document.createElement('option');o.value=y;o.textContent=y;
+    if(y===n.getFullYear())o.selected=true;my.appendChild(o);}
+  // Load on start
+  fetchSheet();
+  // Auto-refresh every minute
+  _pollTimer=setInterval(fetchSheet, POLL_MS);
+});
+
+function onCo(){cur=$('coSel').value;renderAll();$('pg').scrollTo({top:0,behavior:'smooth'});}
+function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);}
+
+function rKPI(d){
+  const emp=d.filter(c=>typeof c.gosi==='number').reduce((a,c)=>a+c.gosi,0);
+  const s=d.filter(c=>typeof c.saudis==='number').reduce((a,c)=>a+c.saudis,0);
+  const n=d.filter(c=>typeof c.nonSaudi==='number').reduce((a,c)=>a+c.nonSaudi,0);
+  set('kEmp',emp||'—');set('kS',s);set('kN',n);
+  set('kAtt',ns(d,'attested'));set('kUn',ns(d,'unattested'));set('kDiff',ns(d,'diff'));
+  set('kIq',ns(d,'activeIqamas'));set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
+  const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
+  set('kWP',wpi+wpa+wpe);set('kWPi',wpi);set('kWPe',wpa+wpe);
+  const act=d.filter(c=>c.qiwaStatus==='Active').length;
+  set('kAct',act+'/'+d.length);set('kIn',d.length-act);
+}
+function rPlat(d){
+  const plats=[{name:'Qiwa',key:'qiwaStatus',rk:'caRate'},{name:'Mudad',key:'mudadStatus',rk:'mudadCompliance'},
+    {name:'Muqeem',key:'muqeemStatus',rk:null},{name:'Chamber',key:'chamberStatus',rk:null},
+    {name:'WP Comp.',key:'qiwaStatus',rk:'wpRate'}];
+  $('platStrip').innerHTML=plats.map(p=>{
+    const s1=d.length===1;let status,rate,pct=100,ent='';
+    if(s1){status=d[0][p.key]||'N/A';rate=p.rk?pN(d[0][p.rk]):null;
+      pct=rate!=null?rate:(status==='Active'?100:0);ent=status;}
+    else{const ac=d.filter(c=>c[p.key]==='Active').length;
+      ent=ac+'/'+d.length;status=ac===d.length?'Active':ac===0?'Inactive':ent;
+      pct=Math.round(ac/d.length*100);rate=p.rk?av(d.map(c=>c[p.rk])):null;}
+    const cls=status==='Active'?'p-ok':status==='Inactive'?'p-no':status==='N/A'?'p-na':'p-warn';
+    const bc=status==='Active'?'var(--teal)':status==='Inactive'?'var(--red)':'var(--amber)';
+    const rs=rate!=null?rate:pct;
+    return `<div class="plat"><div class="plat-top"><div class="plat-name">${p.name}</div><div class="plat-ent">${ent}</div></div>
+      <span class="pill ${cls}">● ${status==='Active'?'Active':status==='Inactive'?'Inactive':status}</span>
+      <div class="plat-bar"><div class="plat-trk"><div class="plat-fill" style="width:${rs}%;background:${bc}"></div></div><div class="plat-pct" style="color:${bc}">${rs}%</div></div>
+    </div>`;}).join('');
+}
+function rQiwa(d){
+  const tc=ns(d,'qiwaTotal'),att=ns(d,'attested'),ac=ns(d,'activeCont'),df=ns(d,'diff');
+  $('qGrid').innerHTML=`
+    <div class="mcard"><div class="lbl">إجمالي العقود</div><div class="sub">TOTAL CONTRACTS</div><div class="val ct">${tc}</div></div>
+    <div class="mcard"><div class="lbl">الموثّقة</div><div class="sub">ATTESTED</div><div class="val" style="color:var(--teal)">${att}</div></div>
+    <div class="mcard"><div class="lbl">فعّالة (شاملة المنتهية)</div><div class="sub">ACTIVE INCL.ENDED</div><div class="val ca">${ac}</div></div>
+    <div class="mcard"><div class="lbl">الفارق</div><div class="sub">VARIANCE</div><div class="val cb">${df}</div></div>`;
+  $('qBars').innerHTML=[{ar:'نسبة CA',en:'CA Rate',rk:'caRate',clr:'var(--teal)'},
+    {ar:'امتثال تصاريح العمل',en:'WP Compliance',rk:'wpRate',clr:'var(--blue)'},
+    {ar:'امتثال مدد',en:'Mudad Compliance',rk:'mudadCompliance',clr:'#06b6d4'}
+  ].map(b=>{const a=av(d.map(c=>c[b.rk]));const vc=a>=95?'var(--teal)':a>=80?'var(--amber)':'var(--red)';
+    return `<div class="rbar"><div class="rbar-head"><div><div class="ar">${b.ar}</div><div class="en">${b.en}</div></div><div class="rbar-pct" style="color:${vc}">${a}%</div></div>
+      <div class="rbar-trk"><div class="rbar-fill" style="width:${a}%;background:${b.clr}"></div></div></div>`;}).join('');
+}
+function rWP(d){
+  $('wpBody').innerHTML=d.map(c=>`<tr>
+    <td class="ent-nm">${c.name}</td>
+    <td class="num ${pN(c.permitIssuance)>0?'ca':''}">${pN(c.permitIssuance)}</td>
+    <td class="num ${pN(c.wpAction)>0?'cr':''}">${pN(c.wpAction)}</td>
+    <td class="num ${pN(c.expLt30)>0?'ca':''}">${pN(c.expLt30)}</td>
+    <td class="num ${pN(c.expired)>0?'cr':''}">${pN(c.expired)}</td>
+    <td class="dt">${c.wpExpiry||'—'}</td></tr>`).join('');
+}
+function rMuqeem(d){
+  const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),l3=ns(d,'iqLt30'),
+        l6=ns(d,'iqLt60'),r=ns(d,'expiredIqRen'),x=ns(d,'exitReEntry');
+  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],
+    [l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],
+    [r,'للتجديد','RENEWAL',r>0,'var(--red)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']
+  ].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div>
+    <div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('');
+  $('mStats').innerHTML=`
+    <div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span><span class="en">TOTAL ACTIVE</span></div><div class="v" style="color:var(--teal)">${t}</div></div>
+    <div class="srow"><div class="lbl"><span class="ar">إقامات منتهية</span><span class="en">EXPIRED</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div>
+    <div class="srow"><div class="lbl"><span class="ar">تأشيرات خروج وعودة</span><span class="en">EXIT/RE-ENTRY</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
+  const ma=d.filter(c=>c.mudadStatus==='Active').length;
+  const mc=d.filter(c=>c.mudadCompliance&&c.mudadCompliance!=='N/A');
+  const avgC=mc.length?Math.round(mc.reduce((a,c)=>a+pN(c.mudadCompliance),0)/mc.length):0;
+  const vv=[...new Set(d.map(c=>c.mudadViol).filter(v=>v&&v!=='N/A'&&v!=='None'))];
+  $('mudadS').innerHTML=`
+    <div class="srow"><div class="lbl"><span class="ar">حسابات نشطة</span><span class="en">ACTIVE ACCOUNTS</span></div><div class="v" style="color:var(--teal)">${ma}/${d.length}</div></div>
+    <div class="srow"><div class="lbl"><span class="ar">الامتثال العام</span><span class="en">AVG.COMPLIANCE</span></div><div class="v" style="color:var(--teal)">${avgC}%</div></div>
+    <div class="srow"><div class="lbl"><span class="ar">المخالفات</span><span class="en">VIOLATIONS</span></div><div class="v" style="color:${vv.length?'var(--red)':'var(--teal)'};font-family:var(--ar);font-size:12px">${vv.length?vv.join('، '):'لا يوجد'}</div></div>`;
+}
+function rAnalytics(d){
+  if(empCh){empCh.destroy();empCh=null;}if(natCh){natCh.destroy();natCh=null;}
+  const single=d.length===1;
+  if(single){
+    const c=d[0];const s=typeof c.saudis==='number'?c.saudis:0,n=typeof c.nonSaudi==='number'?c.nonSaudi:0;
+    const tot=s+n,ps=tot>0?Math.round(s/tot*100):0;
+    $('leftPH').innerHTML=`<div class="ar">${c.name} — ملف الكيان</div><div class="en">ENTITY PROFILE · GOSI</div>`;
+    $('empSec').innerHTML=`<div style="display:flex;flex-direction:column;gap:7px">
+      <div class="ek2">
+        <div class="ecard"><div class="lbl">إجمالي الموظفين</div><div class="val" style="color:var(--teal)">${c.gosi||'—'}</div></div>
+        <div class="ecard"><div class="lbl">سعودي</div><div class="val" style="color:var(--teal)">${s}</div></div>
+        <div class="ecard"><div class="lbl">غير سعودي</div><div class="val" style="color:var(--blue)">${n}</div></div>
+        <div class="ecard"><div class="lbl">نسبة السعودة</div><div class="val" style="color:var(--teal)">${ps}%</div></div>
+        <div class="ecard"><div class="lbl">عقود Qiwa</div><div class="val" style="color:var(--blue)">${pN(c.qiwaTotal)}</div></div>
+        <div class="ecard"><div class="lbl">الموثّقة</div><div class="val" style="color:var(--teal)">${pN(c.attested)}</div></div>
+      </div>
+      <div class="erow"><span class="lbl">نطاق العمل · Scope</span><span class="val">${c.scope||'—'}</span></div>
+      <div class="erow"><span class="lbl">تاريخ انتهاء الاشتراك</span><span class="val" style="color:var(--t2)">${c.wpExpiry||'—'}</span></div>
+    </div>`;
+  }else{
+    $('leftPH').innerHTML='<div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY · GOSI</div>';
+    const ed=d.filter(c=>typeof c.gosi==='number');
+    const bH=Math.max(150,ed.length*28+52);
+    $('empSec').innerHTML=`<div style="position:relative;height:${bH}px"><canvas id="empChart"></canvas></div>`;
+    empCh=new Chart($('empChart'),{type:'bar',
+      data:{labels:ed.map(c=>c.name),datasets:[
+        {label:'سعودي',data:ed.map(c=>+c.saudis||0),backgroundColor:'rgba(45,212,191,.82)',borderRadius:4},
+        {label:'غير سعودي',data:ed.map(c=>+c.nonSaudi||0),backgroundColor:'rgba(56,189,248,.75)',borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{boxWidth:10,boxHeight:10,padding:14,color:'#6b92b8',font:{size:10}}},tooltip:TT},
+        scales:{x:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}}},
+                y:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9}}}}}});}
+  const nd=d.filter(c=>typeof c.saudis==='number');
+  const ts2=nd.reduce((a,c)=>a+c.saudis,0),tn=nd.reduce((a,c)=>a+c.nonSaudi,0),tot2=ts2+tn||1;
+  const ps2=Math.round(ts2/tot2*100);
+  $('natWrap').innerHTML=`<div class="nat">
+    <div class="nat-r"><div class="nat-h"><div class="nat-lbl">سعودي</div><div class="nat-pct" style="color:var(--teal)">${ps2}%</div></div>
+      <div class="nat-trk"><div class="nat-fill" style="width:${ps2}%;background:linear-gradient(90deg,var(--teal2),var(--teal))"><span class="nat-cnt">${ts2.toLocaleString()}</span></div></div></div>
+    <div class="nat-r"><div class="nat-h"><div class="nat-lbl">غير سعودي</div><div class="nat-pct" style="color:var(--blue)">${100-ps2}%</div></div>
+      <div class="nat-trk"><div class="nat-fill" style="width:${100-ps2}%;background:linear-gradient(90deg,#1d4ed8,var(--blue))"><span class="nat-cnt">${tn.toLocaleString()}</span></div></div></div>
+    <div class="nat-foot">
+      <div class="nf"><div class="lbl">إجمالي الموظفين</div><div class="val" style="color:var(--t1)">${tot2.toLocaleString()}</div></div>
+      <div style="width:1px;background:var(--b0)"></div>
+      <div class="nf"><div class="lbl">نسبة السعودة</div><div class="val" style="color:var(--teal)">${ps2}%</div></div>
+    </div></div>`;
+}
+function rAct(d){
+  const wa=d.filter(c=>c.acts&&c.acts.length);
+  const tot=wa.reduce((a,c)=>a+c.acts.length,0);
+  set('actCnt','('+tot+')');
+  if(!tot){$('actContainer').innerHTML='<div style="font-size:12px;color:var(--t3);padding:6px 0">لا توجد ملاحظات.</div>';return;}
+  const ord={h:0,m:1,l:2};
+  $('actContainer').innerHTML=`<div class="act-g">${wa.map(c=>{
+    const sorted=[...c.acts].sort((a,b)=>(ord[a.s]||9)-(ord[b.s]||9));
+    return `<div class="acard">
+      <div class="acard-hdr"><span class="acard-co">${c.name}</span><span class="acard-cnt">${sorted.length} ملاحظة</span></div>
+      <div class="acard-body">${sorted.map(a=>{
+        const sc=a.s==='h'?'h':a.s==='m'?'m':'l';
+        const sv=a.s==='h'?'حرج':a.s==='m'?'متوسط':'منخفض';
+        return `<div class="aitem"><div class="sev-d ${sc}"></div><div class="aitem-b">
+          <div class="aitem-t">${a.t}</div>
+          <div class="atags"><span class="asev ${sc}">${sv}</span><span class="atag">يتطلب متابعة</span></div>
+        </div></div>`;}).join('')}</div></div>`;}).join('')}</div>`;
+}
+</script>
+</body>
+</html>
