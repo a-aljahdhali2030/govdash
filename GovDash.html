@@ -588,11 +588,11 @@ function rPlat(d){
     if(s1){status=d[0][p.key]||'N/A';rate=p.rk?pN(d[0][p.rk]):null;pct=rate!=null?rate:(status==='Active'?100:0);}
     else{const ac=d.filter(c=>c[p.key]==='Active').length;ent=ac+'/'+d.length;
       status=ac===d.length?'Active':ac===0?'Inactive':ent;pct=Math.round(ac/d.length*100);rate=p.rk?av(d.map(c=>c[p.rk])):null;}
-    const isOk=status==='Active',isNo=status==='Inactive',isPartial=!isOk&&!isNo&&status!=='N/A';
+    const isOk=status==='Active'||status==='نشط',isNo=status==='Inactive'||status==='غير نشط',isPartial=!isOk&&!isNo&&status!=='N/A';
     const bc=isOk?'var(--teal)':isPartial?'var(--blue)':status==='N/A'?'var(--t3)':'var(--red)';
     const cls=isOk?'p-ok':isPartial?'p-warn':status==='N/A'?'p-na':'p-no';
     const rs=rate!=null?rate:pct;
-    const arStatus=isOk?'نشط — فعّال':isNo?'غير نشط':status==='N/A'?'—':ent+' نشط';
+    const arStatus=isOk?'نشط — فعّال':isNo?'غير نشط':status==='N/A'?'—':ent?ent+' نشط':status;
     return `<div class="plat">
       <div class="plat-head"><div class="plat-name">${p.name}</div>
         ${ent?`<span style="font-family:var(--mono);font-size:14px;font-weight:700;color:${bc}">${ent}</span>`:''}</div>
