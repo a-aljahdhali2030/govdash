@@ -451,8 +451,7 @@ function xlsxToRecords(rows){
       iqLt30:         gf(row,30),   /* AE=30 */
       iqLt60:         gf(row,31),   /* AF=31 */
       expiredIqRen:   gf(row,32),   /* AG=32 */
-      subStatus:      gf(row,33),   /* AH=33 Sub. Status */
-      chamberStatus:  gf(row,36),   /* AK=36 — AI(34)=Notes, AJ(35)=Notes&Action */
+      chamberStatus:  gf(row,33),   /* AH=33 */
       acts: getNotes(row)
     });
   }
