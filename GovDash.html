@@ -383,8 +383,8 @@ const PCT=new Set([14,15,25]);
 
 function xlsxToRecords(rows){
   let start=0;
-  const skip=new Set(['campany','company','','nan','undefined','null','gosi','qiwa','mudad','muqeem','chamber','notes']);
-  for(let i=0;i<Math.min(rows.length,5);i++){
+  const skip=new Set(['campany','company','','nan','undefined','null','gosi','qiwa','mudad','muqeem','chamber','notes','chamber of commerce','sub. status','sub status']);
+  for(let i=0;i<Math.min(rows.length,6);i++){
     const v=String(rows[i][0]||'').trim().toLowerCase();
     if(v&&!skip.has(v)){start=i;break;}
   }
