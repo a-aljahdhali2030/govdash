@@ -16,7 +16,7 @@
   --ar:'Cairo',sans-serif;--mono:'JetBrains Mono',monospace;--r:12px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-size:13px;overflow:hidden;background:var(--bg);}
+html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-size:13px;overflow:hidden;background:var(--bg)}
 #bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
 .tb{position:relative;z-index:10;height:56px;background:linear-gradient(180deg,rgba(10,18,38,.98),rgba(13,21,40,.95));border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;padding:0 22px;backdrop-filter:blur(16px)}
 .tb-brand{display:flex;align-items:center;gap:11px}
@@ -31,17 +31,17 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 .sync-btn svg{transition:transform .3s}
 .sync-btn.spinning svg{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.live-pill{display:flex;align-items:center;gap:6px;background:rgba(10,16,30,.8);border:1px solid var(--b1);border-radius:20px;padding:5px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);transition:all .3s}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(10,16,30,.8);border:1px solid var(--b1);border-radius:20px;padding:5px 12px;font-family:var(--mono);font-size:10px;color:var(--t2)}
 .live-pill.ok{border-color:rgba(52,211,153,.4)}
 .live-pill.err{border-color:rgba(248,113,113,.4)}
 .live-pill.loading{border-color:rgba(251,191,36,.4)}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);transition:all .3s}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--t3)}
 .live-pill.ok .live-dot{background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.7);animation:blink 2s infinite}
 .live-pill.err .live-dot{background:var(--red)}
 .live-pill.loading .live-dot{background:var(--amber);animation:blink .8s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .co-wrap{position:relative}
-.co-sel{background:rgba(10,16,30,.9);border:1px solid var(--b1);color:var(--t1);font-family:var(--ar);font-size:13px;font-weight:700;padding:7px 14px 7px 30px;border-radius:9px;outline:none;appearance:none;cursor:pointer;direction:rtl;min-width:200px;transition:border-color .2s}
+.co-sel{background:rgba(10,16,30,.9);border:1px solid var(--b1);color:var(--t1);font-family:var(--ar);font-size:13px;font-weight:700;padding:7px 14px 7px 30px;border-radius:9px;outline:none;appearance:none;cursor:pointer;direction:rtl;min-width:200px}
 .co-sel:hover,.co-sel:focus{border-color:var(--teal)}
 .co-sel option{background:#0c1220}
 .co-arr{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--teal);font-size:10px;pointer-events:none}
@@ -50,7 +50,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 .page::-webkit-scrollbar-thumb{background:var(--teal3);border-radius:2px}
 .wrap{padding:14px 22px;display:flex;flex-direction:column;gap:13px}
 .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
-.kpi{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--b0);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:5px;transition:border-color .22s,transform .18s,box-shadow .22s;backdrop-filter:blur(10px)}
+.kpi{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--b0);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:5px;transition:border-color .22s,transform .18s;backdrop-filter:blur(10px)}
 .kpi:hover{transform:translateY(-2px);border-color:var(--b1);box-shadow:0 12px 40px rgba(0,0,0,.4)}
 .kpi-acc{position:absolute;top:0;right:0;left:0;height:2px}
 .kpi-glow{position:absolute;bottom:-50px;left:-50px;width:140px;height:140px;border-radius:50%;opacity:.04;pointer-events:none}
@@ -165,7 +165,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     </div>
   </div>
   <div class="tb-r">
-    <div class="live-pill ok" id="livePill"><div class="live-dot"></div><span id="liveTxt">✓ بيانات محدّثة</span></div>
+    <div class="live-pill loading" id="livePill"><div class="live-dot"></div><span id="liveTxt">جاري الاتصال...</span></div>
     <button class="sync-btn" id="syncBtn" onclick="fetchSheet()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -261,86 +261,190 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 </div></div>
 
 <script>
+/* PARTICLE BG */
 (()=>{const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');let W,H,pts=[];
 const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
 const init=()=>{pts=[];const n=Math.floor(W*H/22000);for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.3,a:Math.random()*.45+.08,hue:Math.random()>.55?174:198})};
 const draw=()=>{ctx.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);if(d<130){ctx.beginPath();ctx.strokeStyle=`rgba(45,212,191,${(1-d/130)*.05})`;ctx.lineWidth=.5;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke()}}pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},65%,68%,${p.a})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});requestAnimationFrame(draw)};
 addEventListener('resize',()=>{resize();init()});resize();init();draw();})();
 
-/* ══ البيانات المضمّنة — محدّثة من CSV ══ */
-const EMBEDDED=[
-{"id":"THG","name":"THG","gosi":7,"saudis":4,"nonSaudi":3,"qiwaTotal":7,"attested":7,"unattested":0,"activeCont":13,"diff":6,"qiwaStatus":"Active","scope":"High Green","caRate":86,"wpRate":100,"wpNotes":"None","permitIssuance":1,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"23/04/2027","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"None","muqeemStatus":"Active","activeIqamas":3,"expiredIq":0,"iqLt30":0,"iqLt60":1,"exitReEntry":1,"chamberStatus":"Active","acts":[{"s":"h","t":"يوجد 6 عقود في منصة قوى لموظفين انتهت علاقتهم الوظيفية بالشركة، إلا أن عقودهم لا تزال نشطة."},{"s":"h","t":"يوجد عقد نشط للسيد علاء عبدات رغم نقل خدماته إلى شركة المميزة، كما أن لديه عقدًا نشطًا آخر لدى الشركة المنقول إليها."},{"s":"m","t":"عقد الرئيس التنفيذي يحتاج إلى تحديث."},{"s":"m","t":"عقد السيد / محمد عبالحميد في قوى ينتهي خلال يوم واحد وسوف يتم التجديد تلقائياً"}]},
-{"id":"TMSS","name":"TMSS","gosi":12,"saudis":7,"nonSaudi":5,"qiwaTotal":12,"attested":12,"unattested":0,"activeCont":41,"diff":29,"qiwaStatus":"Active","scope":"Platinum","caRate":100,"wpRate":100,"wpNotes":"1","permitIssuance":2,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"23/04/2027","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"1","muqeemStatus":"Inactive","activeIqamas":5,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":1,"chamberStatus":"Active","acts":[{"s":"h","t":"يوجد 29 عقدًا نشطًا في منصة قوى لموظفين انتهت علاقتهم الوظيفية بالشركة، إلا أن عقودهم لا تزال نشطة على المنصة."},{"s":"m","t":"يوجد 8 عقود تحتاج إلى تحديث الاجر في عقد قوى."}]},
-{"id":"Daem-JED","name":"Daem- JED","gosi":183,"saudis":1,"nonSaudi":182,"qiwaTotal":2,"attested":2,"unattested":0,"activeCont":63,"diff":59,"qiwaStatus":"Active","scope":"Platinum","caRate":100,"wpRate":99,"wpNotes":"5","permitIssuance":0,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"27/04/2026","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"5","muqeemStatus":"Active","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":5,"chamberStatus":"Active","acts":[{"s":"h","t":"يوجد اختلاف بين عدد الموظفين المسجلين في التأمينات الاجتماعية (GOSI) وعدد العقود المسجلة في منصة قوى. في كل فروع شركة داعم"},{"s":"m","t":"تم حضور مفتش من التأمنيات الاجتماعية لمقر شركة داعم ضمن جولات التوظيف الوهمي وطلب تزويدهم ببعض المستندات لعدد (2) من الموظفات"}]},
-{"id":"Daem-JED-branch","name":"Daem- JED - branch","gosi":1,"saudis":1,"nonSaudi":0,"qiwaTotal":5,"attested":5,"unattested":0,"activeCont":5,"diff":0,"qiwaStatus":"Active","scope":"Medium Green","caRate":100,"wpRate":99,"wpNotes":"None","permitIssuance":0,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"27/04/2026","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"None","muqeemStatus":"Active","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[{"s":"m","t":"يجري العمل حاليًا على التحقق من العقود ومطابقتها وتسويتها."}]},
-{"id":"Daem-RUH","name":"Daem- RUH","gosi":26,"saudis":21,"nonSaudi":5,"qiwaTotal":177,"attested":177,"unattested":0,"activeCont":209,"diff":32,"qiwaStatus":"Active","scope":"Medium Green","caRate":100,"wpRate":99,"wpNotes":"None","permitIssuance":9,"wpAction":8,"expLt30":2,"expLt90":5,"expLt90b":0,"expired":0,"wpExpiry":"27/04/2026","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"None","muqeemStatus":"Active","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[]},
-{"id":"Daem-KHB","name":"Daem- KHB","gosi":1,"saudis":1,"nonSaudi":0,"qiwaTotal":25,"attested":25,"unattested":0,"activeCont":25,"diff":1,"qiwaStatus":"Active","scope":"Medium Green","caRate":100,"wpRate":99,"wpNotes":"None","permitIssuance":3,"wpAction":3,"expLt30":2,"expLt90":1,"expLt90b":0,"expired":0,"wpExpiry":"27/04/2026","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"None","muqeemStatus":"Active","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[{"s":"m","t":"يوجد 25 موظفًا مسجلة عقودهم في منصة قوى ضمن فرع الرياض، بينما هم مسجلون في التأمينات الاجتماعية (GOSI) تحت الفرع الرئيسي."},{"s":"h","t":"يوجد موظفان بعقود نشطة في الفرع، لكنهما غير مسجلين في التأمينات الاجتماعية (GOSI)."}]},
-{"id":"Al-Mumayaza","name":"Al-Mumayaza","gosi":5,"saudis":3,"nonSaudi":2,"qiwaTotal":5,"attested":5,"unattested":0,"activeCont":5,"diff":0,"qiwaStatus":"Active","scope":"Small Green (Category A)","caRate":100,"wpRate":100,"wpNotes":"None","permitIssuance":2,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"21/04/2027","mudadStatus":"Active","mudadCompliance":100,"mudadViol":"None","muqeemStatus":"Active","activeIqamas":2,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[]},
-{"id":"Mostdam","name":"Mostdam","gosi":"N/A","saudis":"N/A","nonSaudi":"N/A","qiwaTotal":0,"attested":0,"unattested":0,"activeCont":0,"diff":0,"qiwaStatus":"Inactive","scope":"N/A","caRate":"N/A","wpRate":"N/A","wpNotes":"None","permitIssuance":0,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"N/A","mudadStatus":"Inactive","mudadCompliance":"N/A","mudadViol":"N/A","muqeemStatus":"Inactive","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[]},
-{"id":"Modern-Baggage","name":"Modern Baggage","gosi":41,"saudis":36,"nonSaudi":4,"qiwaTotal":40,"attested":38,"unattested":2,"activeCont":43,"diff":5,"qiwaStatus":"Active","scope":"Platinum","caRate":100,"wpRate":100,"wpNotes":"None","permitIssuance":0,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"23/04/2027","mudadStatus":"Inactive","mudadCompliance":"N/A","mudadViol":"N/A","muqeemStatus":"Inactive","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Active","acts":[]},
-{"id":"Nassem","name":"Nassem","gosi":"N/A","saudis":"N/A","nonSaudi":"N/A","qiwaTotal":0,"attested":0,"unattested":0,"activeCont":0,"diff":0,"qiwaStatus":"N/A","scope":"N/A","caRate":"N/A","wpRate":"N/A","wpNotes":"N/A","permitIssuance":0,"wpAction":0,"expLt30":0,"expLt90":0,"expLt90b":0,"expired":0,"wpExpiry":"N/A","mudadStatus":"Inactive","mudadCompliance":"N/A","mudadViol":"N/A","muqeemStatus":"Inactive","activeIqamas":0,"expiredIq":0,"iqLt30":0,"iqLt60":0,"exitReEntry":0,"chamberStatus":"Inactive","acts":[{"s":"l","t":"لم يتم تفعيل جميع المنصات بعد."}]}
-];
-
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?output=csv';
+/* ══ CONFIG ══ */
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=1444680887&single=true&output=csv';
 const POLL_MS=60000;
-const ID_MAP={'THG':'THG','TMSS':'TMSS','Daem- JED':'Daem-JED','Daem- JED - branch':'Daem-JED-branch','Daem- RUH':'Daem-RUH','Daem- KHB':'Daem-KHB','Al-Mumayaza':'Al-Mumayaza','Mostdam':'Mostdam','Modern Baggage':'Modern-Baggage','Nassem':'Nassem','Nassem ':'Nassem'};
 
-function parseCSVtoRecords(text){
-  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+const ID_MAP={
+  'THG':'THG','TMSS':'TMSS','Daem- JED':'Daem-JED',
+  'Daem- JED - branch':'Daem-JED-branch','Daem- RUH':'Daem-RUH',
+  'Daem- KHB':'Daem-KHB','Al-Mumayaza':'Al-Mumayaza',
+  'Mostdam':'Mostdam','Modern Baggage':'Modern-Baggage',
+  'Nassem':'Nassem','Nassem ':'Nassem'
+};
+
+/* ══ CSV PARSER ══
+   الشيت عنده صفّان هيدر:
+   صف 1: أسماء المجموعات (Gosi, Qiwa, Mudad...)
+   صف 2: أسماء الأعمدة (Employees, Saudis...)
+   صف 3+: البيانات (THG, TMSS...)
+
+   خريطة الأعمدة المؤكدة من الملف:
+   A=0  Company
+   B=1  Employees (gosi)
+   C=2  Saudis
+   D=3  Non-Saudi
+   F=5  Total Conts (qiwaTotal)
+   I=8  Attested
+   J=9  Unattested
+   K=10 Total Active
+   L=11 Difference
+   M=12 Sub.Status (qiwaStatus)
+   N=13 Curr.Scope
+   O=14 CA Rate (%)
+   P=15 WP Valid Rate (%)
+   Q=16 WPS Notes
+   R=17 Permit Issuance
+   S=18 WP Action
+   T=19 Expiring <30
+   X=23 Expiry Date
+   Y=24 Mudad Status
+   Z=25 Compl Rate (%)
+   AA=26 Viol
+   AB=27 Muqeem Sub.Status
+   AC=28 Active Iqamas
+   AD=29 Expired Iqamas
+   AE=30 Iqama <30
+   AF=31 Iqama <60
+   AG=32 Exit/Re-Entry
+   AH=33 Chamber Sub.Status  ← chamberStatus
+   AI=34 Notes col 1
+   AJ=35 Notes & Action Items col 2
+*/
+
+function parseCSV(text){
+  /* تحويل النص لصفوف مع دعم الحقول متعددة الأسطر */
   const rows=[];
-  for(const l of lines){
-    const f=[];let c='',q=false;
-    for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;continue;}if(l[i]===','&&!q){f.push(c.trim());c='';}else c+=l[i];}
-    f.push(c.trim());rows.push(f);
+  let cur=[],cell='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(ch==='"'){
+      if(inQ&&text[i+1]==='"'){cell+='"';i++;}
+      else inQ=!inQ;
+    }else if(ch===','&&!inQ){cur.push(cell);cell='';}
+    else if((ch==='\n'||ch==='\r')&&!inQ){
+      if(ch==='\r'&&text[i+1]==='\n')i++;
+      cur.push(cell);rows.push(cur);cur=[];cell='';
+    }else cell+=ch;
   }
-  /* skip 2 header rows, find data start */
-  let start=2;
-  for(let i=0;i<Math.min(rows.length,5);i++){
-    const v=String(rows[i][0]||'').trim();
-    if(v&&v!=='Campany'&&v!=='Company'&&v!=='')  {start=i;break;}
-  }
-  const pN=s=>{if(!s||s==='N/A')return 'N/A';const n=parseFloat(String(s).replace('%',''));return isNaN(n)?s:String(s).includes('%')?(n<=1?Math.round(n*100):Math.round(n)):Math.round(n);};
-  const pI=s=>{if(!s||s==='N/A')return 0;const n=parseFloat(s);return isNaN(n)?0:Math.round(n);};
-  const pS=s=>{if(!s||s.toLowerCase()==='nan')return 'N/A';return String(s).trim();};
+  if(cell||cur.length)cur.push(cell),rows.push(cur);
+
+  /* تخطّى الصفّين الأولين (هيدر) وابدأ من الصف الثالث */
+  const dataRows=rows.slice(2).filter(r=>r[0]&&r[0].trim()&&r[0].trim()!=='');
+
+  function g(row,i){const v=(row[i]||'').trim();return v||'N/A';}
+  function gN(row,i){const v=g(row,i);if(v==='N/A')return 0;const n=parseFloat(v);return isNaN(n)?0:Math.round(n);}
+  function gP(row,i){const v=g(row,i);if(v==='N/A')return 'N/A';const s=v.replace('%','');const n=parseFloat(s);if(isNaN(n))return 'N/A';return v.includes('%')?(n<=1?Math.round(n*100):Math.round(n)):Math.round(n);}
+
   function getNotes(row){
     const acts=[];
-    [35,36].forEach(idx=>{
-      const v=String(row[idx]||'').trim();
-      if(!v||v==='N/A'||v.length<4)return;
+    [34,35].forEach(idx=>{
+      const v=(row[idx]||'').trim();
+      if(!v||v.length<4)return;
       v.split('\n').forEach(line=>{
-        line=line.trim().replace(/^\*+/,'').trim();
+        line=line.trim().replace(/^\*+\s*/,'').trim();
         if(line.length<4)return;
-        const s=line.match(/غير مسجل|اختلاف|انتهت|نشطًا|مفتش/)?'h':line.match(/تحديث|تحقق|يوجد|يجري|يستلزم|تحتاج|يلزم|تم/)?'m':'l';
+        const s=line.match(/غير مسجل|اختلاف|انتهت|نشطًا|مفتش|فور/)?'h':
+                 line.match(/تحديث|تحقق|يوجد|يجري|يستلزم|تحتاج|يلزم|تم/)?'m':'l';
         acts.push({s,t:line});
       });
     });
     return acts;
   }
-  const out=[];
-  for(let i=start;i<rows.length;i++){
-    const r=rows[i];
-    const nm=pS(r[0]);
-    if(!nm||nm==='N/A'||nm==='Campany'||nm==='')continue;
+
+  return dataRows.map(row=>{
+    const nm=row[0].trim();
     const rid=ID_MAP[nm]||nm.replace(/\s+/g,'-');
-    out.push({id:rid,name:nm,
-      gosi:pI(r[1]),saudis:pI(r[2]),nonSaudi:pI(r[3]),
-      qiwaTotal:pI(r[5]),attested:pI(r[8]),unattested:pI(r[9]),
-      activeCont:pI(r[10]),diff:pI(r[11]),
-      qiwaStatus:pS(r[12]),scope:pS(r[13]),
-      caRate:pN(r[14]),wpRate:pN(r[15]),
-      wpNotes:pS(r[16]),permitIssuance:pI(r[17]),wpAction:pI(r[18]),
-      expLt30:pI(r[19]),expLt90:pI(r[20]),expLt90b:pI(r[21]),expired:pI(r[22]),
-      wpExpiry:pS(r[23]),
-      mudadStatus:pS(r[24]),mudadCompliance:pN(r[25]),mudadViol:pS(r[26]),
-      muqeemStatus:pS(r[27]),activeIqamas:pI(r[28]),expiredIq:pI(r[29]),
-      iqLt30:pI(r[30]),iqLt60:pI(r[31]),exitReEntry:pI(r[32]),
-      chamberStatus:pS(r[33]),
-      acts:getNotes(r)});
-  }
-  return out;
+    return {
+      id:rid, name:nm,
+      gosi:       gN(row,1),
+      saudis:     gN(row,2),
+      nonSaudi:   gN(row,3),
+      qiwaTotal:  gN(row,5),
+      attested:   gN(row,8),
+      unattested: gN(row,9),
+      activeCont: gN(row,10),
+      diff:       gN(row,11),
+      qiwaStatus: g(row,12),
+      scope:      g(row,13),
+      caRate:     gP(row,14),
+      wpRate:     gP(row,15),
+      permitIssuance: gN(row,17),
+      wpAction:   gN(row,18),
+      expLt30:    gN(row,19),
+      expired:    gN(row,22),
+      wpExpiry:   g(row,23),
+      mudadStatus:    g(row,24),
+      mudadCompliance:gP(row,25),
+      mudadViol:      g(row,26),
+      muqeemStatus:   g(row,27),
+      activeIqamas:   gN(row,28),
+      expiredIq:      gN(row,29),
+      iqLt30:         gN(row,30),
+      iqLt60:         gN(row,31),
+      exitReEntry:    gN(row,32),
+      chamberStatus:  g(row,33),
+      acts: getNotes(row)
+    };
+  }).filter(r=>r.name);
 }
 
-let co=[],cur='all',empCh,donutCh,wpCh,_pollTimer;
+/* ══ FETCH ══ */
+let _poll=null;
+async function fetchSheet(){
+  const btn=document.getElementById('syncBtn');
+  if(btn)btn.classList.add('spinning');
+  setStatus('loading','جاري التحديث...');
+  try{
+    const res=await fetch(CSV_URL+'&nocache='+Date.now());
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    const parsed=parseCSV(text);
+    if(parsed&&parsed.length>0){
+      applyData(parsed);
+      setStatus('ok');
+    }else{
+      throw new Error('no data');
+    }
+  }catch(e){
+    setStatus('err','تعذّر الاتصال: '+e.message);
+  }
+  if(btn)btn.classList.remove('spinning');
+}
+
+function setStatus(state,msg=''){
+  const pill=document.getElementById('livePill'),span=document.getElementById('liveTxt');
+  if(!pill||!span)return;
+  const ts=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  pill.className='live-pill '+state;
+  if(state==='ok')span.textContent='✓ Google Sheets · '+ts;
+  else if(state==='err')span.textContent=msg;
+  else span.textContent=msg;
+}
+
+function applyData(data){
+  co=data;
+  const sel=document.getElementById('coSel'),prev=sel.value;
+  sel.innerHTML='<option value="all">جميع الكيانات</option>';
+  co.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+  if(co.find(c=>c.id===prev))sel.value=prev;else{sel.value='all';cur='all';}
+  renderAll();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  fetchSheet();
+  _poll=setInterval(fetchSheet,POLL_MS);
+});
+
+/* ══ STATE ══ */
+let co=[],cur='all',empCh,donutCh,wpCh;
 const $=id=>document.getElementById(id);
 const set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
 const ns=(a,k)=>a.reduce((t,c)=>{const v=c[k];return t+(typeof v==='number'?v:0);},0);
@@ -351,54 +455,6 @@ const av=a=>{const n=a.map(pN).filter(x=>x>0);return n.length?Math.round(n.reduc
 Chart.defaults.color='#2d4a6a';Chart.defaults.borderColor='rgba(45,212,191,.08)';
 Chart.defaults.font.size=10;Chart.defaults.font.family="'JetBrains Mono',monospace";
 const TT={backgroundColor:'rgba(5,8,15,.97)',borderColor:'rgba(45,212,191,.22)',borderWidth:1,titleColor:'#ddeeff',bodyColor:'#6b92b8',padding:12,cornerRadius:8};
-
-function setStatus(state,msg=''){
-  const pill=$(  'livePill'),span=$('liveTxt');if(!pill||!span)return;
-  const ts=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  pill.className='live-pill '+state;
-  if(state==='ok')span.textContent='✓ Google Sheets · '+ts;
-  else if(state==='err')span.textContent=msg;
-  else span.textContent=msg||'جاري...';
-}
-
-function applyData(data,src){
-  co=data;
-  const sel=$('coSel'),prev=sel.value;
-  sel.innerHTML='<option value="all">جميع الكيانات</option>';
-  co.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
-  if(co.find(c=>c.id===prev))sel.value=prev;else{sel.value='all';cur='all';}
-  renderAll();
-}
-
-async function fetchSheet(){
-  const btn=$('syncBtn');if(btn)btn.classList.add('spinning');
-  setStatus('loading','جاري التحديث...');
-  try{
-    const res=await fetch(CSV_URL+'&t='+Date.now());
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    if(text&&text.length>200){
-      const parsed=parseCSVtoRecords(text);
-      if(parsed&&parsed.length){
-        co=parsed;applyData(parsed,'sheets');
-        setStatus('ok');
-        if(btn)btn.classList.remove('spinning');
-        return;
-      }
-    }
-  }catch(e){}
-  /* fallback to embedded */
-  if(btn)btn.classList.remove('spinning');
-  applyData(EMBEDDED.map(r=>({...r})),'embedded');
-  setStatus('err','لا يوجد اتصال — بيانات مضمّنة محدّثة ✓');
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  applyData(EMBEDDED.map(r=>({...r})),'embedded');
-  setStatus('ok','✓ بيانات مضمّنة محدّثة');
-  fetchSheet();
-  _pollTimer=setInterval(fetchSheet,POLL_MS);
-});
 
 function onCo(){cur=$('coSel').value;renderAll();$('pg').scrollTo({top:0,behavior:'smooth'});}
 function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);}
@@ -443,7 +499,8 @@ function rQiwa(d){
   const compData=[{ar:'نسبة CA',en:'CA Rate',rk:'caRate',clr:'#2dd4bf'},{ar:'تصاريح العمل',en:'WP',rk:'wpRate',clr:'#38bdf8'},{ar:'مدد',en:'Mudad',rk:'mudadCompliance',clr:'#06b6d4'}];
   $('qBars').innerHTML=`<div style="display:flex;gap:8px;justify-content:space-around;padding:6px 0">${compData.map((b,idx)=>{const a=av(d.map(c=>c[b.rk]));const vc=a>=95?b.clr:a>=80?'#fbbf24':'#f87171';return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1"><div style="position:relative;width:90px;height:90px"><canvas id="gauge_${idx}" width="90" height="90"></canvas><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:${vc}">${a}%</div></div></div><div style="text-align:center"><div style="font-size:11px;font-weight:700;color:var(--t1)">${b.ar}</div><div style="font-family:var(--mono);font-size:8px;color:var(--t3)">${b.en}</div></div></div>`;}).join('')}</div>`;
   setTimeout(()=>{compData.forEach((b,idx)=>{const a=av(d.map(c=>c[b.rk]));const canvas=document.getElementById('gauge_'+idx);if(!canvas)return;const ctx=canvas.getContext('2d');const cx=45,cy=45,r=36,lw=8,start=Math.PI*.75,end=Math.PI*2.25,filled=start+(end-start)*(a/100);ctx.clearRect(0,0,90,90);ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();if(a>0){const grad=ctx.createLinearGradient(cx-r,cy,cx+r,cy);const clr=a>=95?b.clr:a>=80?'#fbbf24':'#f87171';grad.addColorStop(0,clr+'99');grad.addColorStop(1,clr);ctx.beginPath();ctx.arc(cx,cy,r,start,filled);ctx.strokeStyle=grad;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();const tx=cx+r*Math.cos(filled),ty=cy+r*Math.sin(filled);ctx.beginPath();ctx.arc(tx,ty,lw/2,0,Math.PI*2);ctx.fillStyle=clr;ctx.shadowColor=clr;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;}});},60);
-  if(d.length===1){const c0=d[0];const caVal=pN(c0.caRate);$('nitaqatSection').innerHTML=`<div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:2px"><div style="font-family:var(--mono);font-size:8.5px;font-weight:600;color:var(--teal);letter-spacing:.8px;margin-bottom:8px">النطاق · Nitaqat</div><div class="nitaqat-row"><span class="nitaqat-lbl">نطاق التوطين</span><span class="nitaqat-val">${c0.scope||'—'}</span></div><div class="nitaqat-row" style="margin-top:6px"><span class="nitaqat-lbl">نسبة CA</span><span class="nitaqat-val" style="color:${caVal>=95?'var(--teal)':caVal>=80?'var(--amber)':'var(--red)'}">${caVal}%</span></div></div>`;}else{$('nitaqatSection').innerHTML='';}
+  if(d.length===1){const c0=d[0];const caVal=pN(c0.caRate);$('nitaqatSection').innerHTML=`<div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:2px"><div style="font-family:var(--mono);font-size:8.5px;font-weight:600;color:var(--teal);letter-spacing:.8px;margin-bottom:8px">النطاق · Nitaqat</div><div class="nitaqat-row"><span class="nitaqat-lbl">نطاق التوطين</span><span class="nitaqat-val">${c0.scope||'—'}</span></div><div class="nitaqat-row" style="margin-top:6px"><span class="nitaqat-lbl">نسبة CA</span><span class="nitaqat-val" style="color:${caVal>=95?'var(--teal)':caVal>=80?'var(--amber)':'var(--red)'}">${caVal}%</span></div></div>`;}
+  else{$('nitaqatSection').innerHTML='';}
 }
 
 function rWP(d){
@@ -462,29 +519,48 @@ function rWP(d){
 function rMuqeem(d){
   const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),l3=ns(d,'iqLt30'),l6=ns(d,'iqLt60'),x=ns(d,'exitReEntry');
   $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],[l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)'],[0,'—','—',false,'var(--t3)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('');
-  $('mStats').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span></div><div class="v" style="color:var(--teal)">${t}</div></div><div class="srow"><div class="lbl"><span class="ar">منتهية</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div><div class="srow"><div class="lbl"><span class="ar">خروج وعودة</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
+  $('mStats').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span><span class="en">TOTAL ACTIVE</span></div><div class="v" style="color:var(--teal)">${t}</div></div><div class="srow"><div class="lbl"><span class="ar">منتهية</span><span class="en">EXPIRED</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div><div class="srow"><div class="lbl"><span class="ar">خروج وعودة</span><span class="en">EXIT/RE-ENTRY</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
   const ma=d.filter(c=>c.mudadStatus==='Active').length;
   const mc=d.filter(c=>c.mudadCompliance&&c.mudadCompliance!=='N/A');
   const avgC=mc.length?Math.round(mc.reduce((a,c)=>a+pN(c.mudadCompliance),0)/mc.length):0;
   const vv=[...new Set(d.map(c=>c.mudadViol).filter(v=>v&&v!=='N/A'&&v!=='None'))];
-  $('mudadS').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">حسابات نشطة</span></div><div class="v" style="color:var(--teal)">${ma}/${d.length}</div></div><div class="srow"><div class="lbl"><span class="ar">الامتثال</span></div><div class="v" style="color:var(--teal)">${avgC}%</div></div><div class="srow"><div class="lbl"><span class="ar">المخالفات</span></div><div class="v" style="color:${vv.length?'var(--red)':'var(--teal)'};font-size:12px">${vv.length?vv.join('، '):'لا يوجد'}</div></div>`;
+  $('mudadS').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">حسابات نشطة</span><span class="en">ACTIVE</span></div><div class="v" style="color:var(--teal)">${ma}/${d.length}</div></div><div class="srow"><div class="lbl"><span class="ar">الامتثال</span><span class="en">COMPLIANCE</span></div><div class="v" style="color:var(--teal)">${avgC}%</div></div><div class="srow"><div class="lbl"><span class="ar">المخالفات</span><span class="en">VIOLATIONS</span></div><div class="v" style="color:${vv.length?'var(--red)':'var(--teal)'};font-size:12px">${vv.length?vv.join('، '):'لا يوجد'}</div></div>`;
 }
 
 function rAnalytics(d){
   if(empCh){empCh.destroy();empCh=null;}if(donutCh){donutCh.destroy();donutCh=null;}
   const single=d.length===1;
-  if(single){const c=d[0];$('leftPH').innerHTML=`<div class="ar">${c.name} — ملف الكيان</div><div class="en">ENTITY PROFILE</div>`;$('empSec').innerHTML=`<div style="display:flex;flex-direction:column;gap:7px"><div class="ek2"><div class="ecard"><div class="lbl">إجمالي الموظفين</div><div class="val" style="color:var(--teal)">${c.gosi||'—'}</div></div><div class="ecard"><div class="lbl">عقود Qiwa</div><div class="val" style="color:var(--blue)">${pN(c.qiwaTotal)}</div></div><div class="ecard"><div class="lbl">الموثّقة</div><div class="val" style="color:var(--teal)">${pN(c.attested)}</div></div><div class="ecard"><div class="lbl">الفارق</div><div class="val" style="color:${pN(c.diff)>0?'var(--amber)':'var(--teal)'}">${pN(c.diff)}</div></div></div><div class="erow"><span class="lbl">النطاق · Nitaqat</span><span class="val">${c.scope||'—'}</span></div><div class="erow"><span class="lbl">انتهاء الاشتراك</span><span class="val" style="color:var(--t2)">${c.wpExpiry||'—'}</span></div></div>`;}
-  else{$('leftPH').innerHTML='<div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div>';const ed=d.filter(c=>typeof c.gosi==='number');$('empSec').innerHTML=`<div style="position:relative;height:${Math.max(150,ed.length*28+52)}px"><canvas id="empChart"></canvas></div>`;empCh=new Chart($('empChart'),{type:'bar',data:{labels:ed.map(c=>c.name),datasets:[{label:'سعودي',data:ed.map(c=>+c.saudis||0),backgroundColor:'rgba(45,212,191,.82)',borderRadius:4},{label:'غير سعودي',data:ed.map(c=>+c.nonSaudi||0),backgroundColor:'rgba(56,189,248,.75)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:10,boxHeight:10,padding:14,color:'#6b92b8',font:{size:10}}},tooltip:TT},scales:{x:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9}}}}}});}
-  const nd=d.filter(c=>typeof c.saudis==='number');const ts=nd.reduce((a,c)=>a+c.saudis,0),tn=nd.reduce((a,c)=>a+c.nonSaudi,0),tot2=ts+tn||1;const ps2=Math.round(ts/tot2*100);
-  $('natWrap').innerHTML=`<div class="nat-donut-wrap"><div class="nat-donut-chart"><canvas id="donutChart"></canvas><div class="nat-donut-center"><div class="nat-donut-pct">${ps2}%</div><div class="nat-donut-lbl">توطين</div></div></div><div class="nat-legend"><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--teal)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">سعودي</div><div class="nat-leg-cnt ct">${ts.toLocaleString()}</div><div class="nat-leg-pct">${ps2}%</div></div></div><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--blue)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">غير سعودي</div><div class="nat-leg-cnt cb">${tn.toLocaleString()}</div><div class="nat-leg-pct">${100-ps2}%</div></div></div><div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:4px"><div style="font-size:10px;color:var(--t2)">الإجمالي</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--t1)">${tot2.toLocaleString()}</div></div></div></div>`;
+  if(single){
+    const c=d[0];
+    $('leftPH').innerHTML=`<div class="ar">${c.name} — ملف الكيان</div><div class="en">ENTITY PROFILE</div>`;
+    $('empSec').innerHTML=`<div style="display:flex;flex-direction:column;gap:7px"><div class="ek2"><div class="ecard"><div class="lbl">إجمالي الموظفين</div><div class="val" style="color:var(--teal)">${c.gosi||'—'}</div></div><div class="ecard"><div class="lbl">عقود Qiwa</div><div class="val" style="color:var(--blue)">${pN(c.qiwaTotal)}</div></div><div class="ecard"><div class="lbl">الموثّقة</div><div class="val" style="color:var(--teal)">${pN(c.attested)}</div></div><div class="ecard"><div class="lbl">الفارق</div><div class="val" style="color:${pN(c.diff)>0?'var(--amber)':'var(--teal)'}">${pN(c.diff)}</div></div></div><div class="erow"><span class="lbl">النطاق · Nitaqat</span><span class="val">${c.scope||'—'}</span></div><div class="erow"><span class="lbl">انتهاء الاشتراك</span><span class="val" style="color:var(--t2)">${c.wpExpiry||'—'}</span></div></div>`;
+  }else{
+    $('leftPH').innerHTML='<div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div>';
+    const ed=d.filter(c=>typeof c.gosi==='number');
+    $('empSec').innerHTML=`<div style="position:relative;height:${Math.max(150,ed.length*28+52)}px"><canvas id="empChart"></canvas></div>`;
+    empCh=new Chart($('empChart'),{type:'bar',data:{labels:ed.map(c=>c.name),datasets:[{label:'سعودي',data:ed.map(c=>+c.saudis||0),backgroundColor:'rgba(45,212,191,.82)',borderRadius:4},{label:'غير سعودي',data:ed.map(c=>+c.nonSaudi||0),backgroundColor:'rgba(56,189,248,.75)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:10,boxHeight:10,padding:14,color:'#6b92b8',font:{size:10}}},tooltip:TT},scales:{x:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9}}}}}});
+  }
+  const nd=d.filter(c=>typeof c.saudis==='number');
+  const ts=nd.reduce((a,c)=>a+c.saudis,0),tn=nd.reduce((a,c)=>a+c.nonSaudi,0),tot2=ts+tn||1;
+  const ps2=Math.round(ts/tot2*100);
+  $('natWrap').innerHTML=`<div class="nat-donut-wrap"><div class="nat-donut-chart"><canvas id="donutChart"></canvas><div class="nat-donut-center"><div class="nat-donut-pct">${ps2}%</div><div class="nat-donut-lbl">توطين</div></div></div><div class="nat-legend"><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--teal)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">سعودي</div><div class="nat-leg-cnt ct">${ts.toLocaleString()}</div><div class="nat-leg-pct">${ps2}% من الإجمالي</div></div></div><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--blue)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">غير سعودي</div><div class="nat-leg-cnt cb">${tn.toLocaleString()}</div><div class="nat-leg-pct">${100-ps2}% من الإجمالي</div></div></div><div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:4px"><div style="font-size:10px;color:var(--t2)">الإجمالي</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--t1)">${tot2.toLocaleString()}</div></div></div></div>`;
   setTimeout(()=>{const canvas=document.getElementById('donutChart');if(!canvas)return;donutCh=new Chart(canvas,{type:'doughnut',data:{labels:['سعودي','غير سعودي'],datasets:[{data:[ts,tn],backgroundColor:['rgba(45,212,191,.85)','rgba(56,189,248,.75)'],borderColor:['rgba(45,212,191,.3)','rgba(56,189,248,.3)'],borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()} (${Math.round(ctx.raw/tot2*100)}%)`}}}}});},50);
 }
 
 function rAct(d){
-  const wa=d.filter(c=>c.acts&&c.acts.length);const tot=wa.reduce((a,c)=>a+c.acts.length,0);set('actCnt','('+tot+')');
+  const wa=d.filter(c=>c.acts&&c.acts.length);
+  const tot=wa.reduce((a,c)=>a+c.acts.length,0);
+  set('actCnt','('+tot+')');
   if(!tot){$('actContainer').innerHTML='<div style="font-size:12px;color:var(--t3);padding:6px 0">لا توجد ملاحظات.</div>';return;}
   const ord={h:0,m:1,l:2};
-  $('actContainer').innerHTML=`<div class="act-g">${wa.map(c=>{const sorted=[...c.acts].sort((a,b)=>(ord[a.s]||9)-(ord[b.s]||9));return `<div class="acard"><div class="acard-hdr"><span class="acard-co">${c.name}</span><span class="acard-cnt">${sorted.length} ملاحظة</span></div><div class="acard-body">${sorted.map(a=>{const sc=a.s==='h'?'h':a.s==='m'?'m':'l';const sv=a.s==='h'?'حرج':a.s==='م'?'متوسط':'منخفض';return `<div class="aitem"><div class="sev-d ${sc}"></div><div class="aitem-b"><div class="aitem-t">${a.t}</div><div class="atags"><span class="asev ${sc}">${sv}</span><span class="atag">يتطلب متابعة</span></div></div></div>`;}).join('')}</div></div>`;}).join('')}</div>`;
+  $('actContainer').innerHTML=`<div class="act-g">${wa.map(c=>{
+    const sorted=[...c.acts].sort((a,b)=>(ord[a.s]||9)-(ord[b.s]||9));
+    return `<div class="acard"><div class="acard-hdr"><span class="acard-co">${c.name}</span><span class="acard-cnt">${sorted.length} ملاحظة</span></div><div class="acard-body">${sorted.map(a=>{
+      const sc=a.s==='h'?'h':a.s==='m'?'m':'l';
+      const sv=a.s==='h'?'حرج':a.s==='m'?'متوسط':'منخفض';
+      return `<div class="aitem"><div class="sev-d ${sc}"></div><div class="aitem-b"><div class="aitem-t">${a.t}</div><div class="atags"><span class="asev ${sc}">${sv}</span><span class="atag">يتطلب متابعة</span></div></div></div>`;
+    }).join('')}</div></div>`;
+  }).join('')}</div>`;
 }
 </script>
 </body>
