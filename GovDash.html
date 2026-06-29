@@ -484,17 +484,23 @@ async function fetchSheet(){
   const csvURL =`https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?output=csv&t=${Date.now()}`;
 
   let parsed=null;
+
+  /* CSV أولاً لأنه يتجاوز CORS */
   try{
-    const res=await fetch(gvizURL);const raw=await res.text();
-    if(raw.includes('setResponse')||raw.includes('"status":"ok"')){
-      const js=raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1);
-      const data=JSON.parse(js);
-      if(data.table)parsed=parseGviz(data.table);
-    }
+    const res=await fetch(csvURL);const text=await res.text();
+    if(text&&text.length>100)parsed=parseCSV(text);
   }catch(e){}
+
+  /* gviz كاحتياط */
   if(!parsed||!parsed.length){
-    try{const res=await fetch(csvURL);const text=await res.text();
-      if(text&&text.length>100)parsed=parseCSV(text);}catch(e){}
+    try{
+      const res=await fetch(gvizURL);const raw=await res.text();
+      if(raw.includes('setResponse')||raw.includes('"status":"ok"')){
+        const js=raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1);
+        const data=JSON.parse(js);
+        if(data.table)parsed=parseGviz(data.table);
+      }
+    }catch(e){}
   }
   if(btn)btn.classList.remove('spinning');
   if(parsed&&parsed.length){
