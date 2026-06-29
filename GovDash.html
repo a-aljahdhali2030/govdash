@@ -383,8 +383,8 @@ const PCT=new Set([14,15,25]);
 
 function xlsxToRecords(rows){
   let start=0;
-  const skip=new Set(['campany','company','','nan','undefined','null','gosi','qiwa','mudad','muqeem','chamber','notes','chamber of commerce','sub. status','sub status']);
-  for(let i=0;i<Math.min(rows.length,6);i++){
+  const skip=new Set(['campany','company','','nan','undefined','null','gosi','qiwa','mudad','muqeem','chamber','notes','chamber of commerce','sub. status','sub status','1','2','notes & action items','note']);
+  for(let i=0;i<Math.min(rows.length,8);i++){
     const v=String(rows[i][0]||'').trim().toLowerCase();
     if(v&&!skip.has(v)){start=i;break;}
   }
@@ -400,10 +400,10 @@ function xlsxToRecords(rows){
     return s;
   }
 
-  /* Notes: AI(34)=Notes, AJ(35)=Notes & Action Items */
+  /* Notes: AK(36)=Notes col1, AL(37)=Notes & Action Items */
   function getNotes(row){
     const acts=[];
-    [34,35].forEach(idx=>{
+    [36,37].forEach(idx=>{
       const v=String(row[idx]||'').trim();
       if(!v||v==='nan'||v==='N/A'||v.length<4)return;
       v.split('\n').forEach(line=>{
@@ -451,7 +451,8 @@ function xlsxToRecords(rows){
       iqLt30:         gf(row,30),   /* AE=30 */
       iqLt60:         gf(row,31),   /* AF=31 */
       expiredIqRen:   gf(row,32),   /* AG=32 */
-      chamberStatus:  gf(row,33),   /* AH=33 */
+      exitReEntry:    gf(row,34),   /* AI=34 */
+      chamberStatus:  gf(row,35),   /* AJ=35 Sub.Status Chamber */
       acts: getNotes(row)
     });
   }
