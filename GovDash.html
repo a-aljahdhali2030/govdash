@@ -480,8 +480,8 @@ async function fetchSheet(){
   setStatus('loading','جاري التحديث...');
 
   /* range=A:AM forces API to return all columns including AA, AH, AI even if empty */
-  const gvizURL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1444680887&range=A:AK&t=${Date.now()}`;
-  const csvURL =`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1444680887&range=A:AK&t=${Date.now()}`;
+  const gvizURL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1444680887&range=A:AL&t=${Date.now()}`;
+  const csvURL =`https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?output=csv&t=${Date.now()}`;
 
   let parsed=null;
   try{
