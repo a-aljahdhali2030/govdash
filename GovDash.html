@@ -487,9 +487,16 @@ async function fetchSheet(){
 
   /* CSV أولاً لأنه يتجاوز CORS */
   try{
-    const res=await fetch(csvURL);const text=await res.text();
-    if(text&&text.length>100)parsed=parseCSV(text);
-  }catch(e){}
+    const res=await fetch(csvURL);
+    const text=await res.text();
+    if(text&&text.length>100){
+      parsed=parseCSV(text);
+    }else{
+      setStatus('err','CSV فارغ: '+text.length+' حرف');
+    }
+  }catch(e){
+    setStatus('err','CSV خطأ: '+e.message);
+  }
 
   /* gviz كاحتياط */
   if(!parsed||!parsed.length){
