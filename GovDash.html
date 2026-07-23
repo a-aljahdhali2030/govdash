@@ -152,6 +152,35 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .kpi{animation:fadeUp .32s ease both}
 .panel,.plat,.acard{animation:fadeUp .3s ease both}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:rgba(14,24,46,.98);border:1px solid var(--b1);border-radius:16px;width:min(720px,94vw);max-height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--b0)}
+.modal-title{font-size:14px;font-weight:700;color:var(--teal)}
+.modal-sub{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px}
+.modal-close{width:28px;height:28px;border-radius:50%;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.modal-close:hover{background:rgba(248,113,113,.25)}
+.modal-filters{display:flex;gap:8px;padding:11px 20px;border-bottom:1px solid var(--b0);flex-wrap:wrap}
+.mf-btn{font-family:var(--mono);font-size:9px;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--b0);background:transparent;color:var(--t2);transition:all .2s}
+.mf-btn.active{background:rgba(45,212,191,.1);color:var(--teal);border-color:rgba(45,212,191,.3)}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 20px;border-bottom:1px solid var(--b0)}
+.mstat{background:var(--deep);border:1px solid var(--b0);border-radius:9px;padding:9px 12px;text-align:center}
+.mstat .n{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.mstat .l{font-size:9px;color:var(--t2);margin-top:4px}
+.modal-body{overflow-y:auto;padding:12px 20px;flex:1}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--teal3);border-radius:2px}
+.emp-table{width:100%;border-collapse:collapse;font-size:11px}
+.emp-table th{padding:8px 10px;font-size:8.5px;font-weight:600;color:var(--t2);text-align:right;border-bottom:1px solid var(--b1);font-family:var(--mono);white-space:nowrap}
+.emp-table td{padding:9px 10px;border-bottom:1px solid var(--b0);vertical-align:middle}
+.emp-table tr:last-child td{border-bottom:none}
+.emp-table tr:hover td{background:rgba(45,212,191,.03)}
+.st-ok{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.22)}
+.st-warn{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.22)}
+.st-amber{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.22)}
+.kpi-clickable{cursor:pointer}
+.kpi-clickable:hover{border-color:rgba(45,212,191,.35)!important}
+.kpi-hint{font-family:var(--mono);font-size:8px;color:var(--teal);opacity:.6;margin-top:3px}
 </style>
 </head>
 <body>
@@ -181,7 +210,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 
 <div class="page" id="pg"><div class="wrap">
   <div class="kpi-strip">
-    <div class="kpi" style="color:var(--teal)">
+    <div class="kpi kpi-clickable" style="color:var(--teal)" onclick="openKpiModal('emp')" title="اضغط لعرض قائمة الموظفين">
       <div class="kpi-acc" style="background:linear-gradient(90deg,var(--teal3),var(--teal),transparent)"></div>
       <div class="kpi-glow" style="background:var(--teal)"></div>
       <div class="kpi-lbl">إجمالي الموظفين</div><div class="kpi-sub">TOTAL EMPLOYEES · GOSI</div>
@@ -189,7 +218,9 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       <div class="kpi-rows">
         <div class="krow"><span class="krow-l">سعودي</span><span class="krow-v ct" id="kS">—</span></div>
         <div class="krow"><span class="krow-l">غير سعودي</span><span class="krow-v cb" id="kN">—</span></div>
-      </div></div>
+      </div>
+      <div class="kpi-hint">← اضغط لعرض التفاصيل</div>
+    </div>
     <div class="kpi" style="color:var(--blue)">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#0369a1,var(--blue),transparent)"></div>
       <div class="kpi-glow" style="background:var(--blue)"></div>
@@ -260,6 +291,22 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
   <div id="actContainer"></div>
 </div></div>
 
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle">—</div>
+        <div class="modal-sub" id="modalSub">—</div>
+      </div>
+      <div class="modal-close" onclick="closeModalNow()">✕</div>
+    </div>
+    <div class="modal-filters" id="modalFilters"></div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
 <script>
 /* PARTICLE BG */
 (()=>{const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');let W,H,pts=[];
@@ -267,6 +314,146 @@ const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
 const init=()=>{pts=[];const n=Math.floor(W*H/22000);for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.3,a:Math.random()*.45+.08,hue:Math.random()>.55?174:198})};
 const draw=()=>{ctx.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);if(d<130){ctx.beginPath();ctx.strokeStyle=`rgba(45,212,191,${(1-d/130)*.05})`;ctx.lineWidth=.5;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke()}}pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},65%,68%,${p.a})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});requestAnimationFrame(draw)};
 addEventListener('resize',()=>{resize();init()});resize();init();draw();})();
+
+/* ══ بيانات الموظفين التفصيلية — تُحدَّث من الشيت ══ */
+const EMP_DATA={
+  'THG':{
+    url:null,
+    data:[
+      {name:'مصعب ابوعبيده عبدالله الكي',id:'2138318205',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'محمد اسامه علي ابوعلوه',id:'1105454712',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'سيماء صلاح الدين يوسف يونس',id:'1043695756',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'عبدالله يوسف احمد محتسب',id:'1002767349',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'MOHAMED ABDULHAMEED',id:'2096934266',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'عبدالله عبدالعزيز ابن محمد الغامدي',id:'1064229576',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+      {name:'ZAID AHMED - IRFAN',id:'2162282178',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
+    ]
+  }
+};
+
+/* ══ MODAL ══ */
+let _modalFilter='all';
+
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalNow();}
+function closeModalNow(){document.getElementById('modalOverlay').classList.remove('open');}
+
+async function openEmpModal(entityId,entityName){
+  const overlay=document.getElementById('modalOverlay');
+  document.getElementById('modalTitle').textContent=entityName+' — قائمة الموظفين';
+  document.getElementById('modalSub').textContent='GOSI · Qiwa · مقارنة وتطابق';
+  document.getElementById('modalStats').innerHTML='<div class="mstat"><div class="n" style="color:var(--teal)">...</div><div class="l">جاري التحميل</div></div>';
+  document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">جاري تحميل البيانات...</div>';
+  document.getElementById('modalFilters').innerHTML='';
+  overlay.classList.add('open');
+
+  const entry=EMP_DATA[entityId];
+  if(!entry){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">لا توجد بيانات تفصيلية لهذه الشركة بعد</div>';
+    document.getElementById('modalStats').innerHTML='';
+    return;
+  }
+
+  /* جلب البيانات إذا لم تكن محمّلة */
+  if(!entry.data){
+    try{
+      const res=await fetch(entry.url+'&t='+Date.now());
+      const text=await res.text();
+      entry.data=parseEmpCSV(text);
+    }catch(e){
+      document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل البيانات</div>';
+      document.getElementById('modalStats').innerHTML='';
+      return;
+    }
+  }
+
+  renderModal(entry.data,entityName);
+}
+
+function parseEmpCSV(text){
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const rows=lines.map(l=>{const f=[];let c='',q=false;for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;continue;}if(l[i]===','&&!q){f.push(c.trim());c='';}else c+=l[i];}f.push(c.trim());return f;});
+  /* تخطّى الهيدر */
+  const data=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r[0]||!r[0].trim())continue;
+    data.push({name:r[0].trim(),id:r[1]||'—',gosi:(r[2]||'').trim(),qiwa:(r[3]||'').trim(),status:(r[4]||'').trim()});
+  }
+  return data;
+}
+
+function renderModal(data,entityName){
+  _modalFilter='all';
+  const total=data.length;
+  const matched=data.filter(r=>r.status==='مطابق').length;
+  const gosiOnly=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط').length;
+  const qiwaOnly=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط').length;
+  const issues=data.filter(r=>r.status!=='مطابق').length;
+
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--teal)">${total}</div><div class="l">إجمالي السجلات</div></div>
+    <div class="mstat"><div class="n" style="color:var(--green)">${matched}</div><div class="l">مطابق</div></div>
+    <div class="mstat"><div class="n" style="color:var(--red)">${issues}</div><div class="l">يحتاج مراجعة</div></div>`;
+
+  document.getElementById('modalFilters').innerHTML=`
+    <button class="mf-btn active" onclick="filterModal('all',this)">الكل (${total})</button>
+    <button class="mf-btn" onclick="filterModal('matched',this)">✓ مطابق (${matched})</button>
+    <button class="mf-btn" onclick="filterModal('gosi',this)">GOSI فقط (${gosiOnly})</button>
+    <button class="mf-btn" onclick="filterModal('qiwa',this)">Qiwa فقط (${qiwaOnly})</button>
+    <button class="mf-btn" onclick="filterModal('issues',this)">⚠ يحتاج مراجعة (${issues})</button>`;
+
+  renderEmpTable(data,'all');
+  window._empData=data;
+}
+
+function filterModal(filter,btn){
+  _modalFilter=filter;
+  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEmpTable(window._empData||[],filter);
+}
+
+function renderEmpTable(data,filter){
+  let rows=data;
+  if(filter==='matched')rows=data.filter(r=>r.status==='مطابق');
+  else if(filter==='issues')rows=data.filter(r=>r.status!=='مطابق');
+  else if(filter==='gosi')rows=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط');
+  else if(filter==='qiwa')rows=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط');
+
+  if(!rows.length){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات</div>';
+    return;
+  }
+
+  document.getElementById('modalBody').innerHTML=`
+    <table class="emp-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الاسم</th>
+          <th>رقم الهوية</th>
+          <th>GOSI</th>
+          <th>Qiwa</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((r,i)=>{
+          const sc=r.status==='مطابق'?'st-ok':r.gosi==='نشط'&&r.qiwa!=='نشط'?'st-amber':'st-warn';
+          const gosiC=r.gosi==='نشط'?'var(--teal)':'var(--t3)';
+          const qiwaC=r.qiwa==='نشط'?'var(--teal)':'var(--t3)';
+          return `<tr>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+            <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.id}</td>
+            <td style="text-align:center"><span style="font-family:var(--mono);font-size:10px;color:${gosiC}">${r.gosi||'—'}</span></td>
+            <td style="text-align:center"><span style="font-family:var(--mono);font-size:10px;color:${qiwaC}">${r.qiwa||'—'}</span></td>
+            <td><span class="${sc}">${r.status||'—'}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
 
 /* ══ CONFIG ══ */
 const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=1444680887&single=true&output=csv';
@@ -457,6 +644,45 @@ Chart.defaults.font.size=10;Chart.defaults.font.family="'JetBrains Mono',monospa
 const TT={backgroundColor:'rgba(5,8,15,.97)',borderColor:'rgba(45,212,191,.22)',borderWidth:1,titleColor:'#ddeeff',bodyColor:'#6b92b8',padding:12,cornerRadius:8};
 
 function onCo(){cur=$('coSel').value;renderAll();$('pg').scrollTo({top:0,behavior:'smooth'});}
+
+function openKpiModal(type){
+  const d=gD();
+  if(d.length===1){
+    /* شركة واحدة محددة */
+    const c=d[0];
+    if(EMP_DATA[c.id]){
+      openEmpModal(c.id,c.name);
+    }else{
+      /* شركة ليس لها بيانات بعد */
+      document.getElementById('modalTitle').textContent=c.name+' — قائمة الموظفين';
+      document.getElementById('modalSub').textContent='GOSI · Qiwa · مقارنة وتطابق';
+      document.getElementById('modalStats').innerHTML='';
+      document.getElementById('modalFilters').innerHTML='';
+      document.getElementById('modalBody').innerHTML=`<div style="text-align:center;padding:40px;color:var(--t3);font-size:13px">لم يتم إضافة بيانات تفصيلية لهذه الشركة بعد</div>`;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+  }else{
+    /* جميع الكيانات — اعرض قائمة اختيار */
+    document.getElementById('modalTitle').textContent='اختر شركة لعرض التفاصيل';
+    document.getElementById('modalSub').textContent='EMPLOYEE DETAILS';
+    document.getElementById('modalStats').innerHTML='';
+    document.getElementById('modalFilters').innerHTML='';
+    document.getElementById('modalBody').innerHTML=`
+      <div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">
+        ${co.filter(c=>EMP_DATA[c.id]).map(c=>`
+          <div onclick="openEmpModal('${c.id}','${c.name}')" style="background:var(--deep);border:1px solid var(--b0);border-radius:10px;padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(45,212,191,.3)'" onmouseout="this.style.borderColor='rgba(45,212,191,.08)'">
+            <span style="font-weight:600;color:var(--t1)">${c.name}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--teal)">عرض ←</span>
+          </div>`).join('')}
+        ${co.filter(c=>!EMP_DATA[c.id]).map(c=>`
+          <div style="background:rgba(18,28,54,.3);border:1px solid var(--b0);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;opacity:.5">
+            <span style="font-weight:600;color:var(--t2)">${c.name}</span>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">لا توجد بيانات بعد</span>
+          </div>`).join('')}
+      </div>`;
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+}
 function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);}
 
 function rKPI(d){
