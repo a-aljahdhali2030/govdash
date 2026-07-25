@@ -221,7 +221,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       </div>
       <div class="kpi-hint">← اضغط لعرض التفاصيل</div>
     </div>
-    <div class="kpi" style="color:var(--blue)">
+    <div class="kpi kpi-clickable" style="color:var(--blue)" onclick="openQiwaModal()" title="اضغط لعرض تفاصيل الفارق">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#0369a1,var(--blue),transparent)"></div>
       <div class="kpi-glow" style="background:var(--blue)"></div>
       <div class="kpi-lbl">العقود الموثّقة</div><div class="kpi-sub">ATTESTED CONTRACTS · QIWA</div>
@@ -229,7 +229,9 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       <div class="kpi-rows">
         <div class="krow"><span class="krow-l">غير موثّق</span><span class="krow-v cr" id="kUn">—</span></div>
         <div class="krow"><span class="krow-l">الفارق GOSI/Qiwa</span><span class="krow-v ca" id="kDiff">—</span></div>
-      </div></div>
+      </div>
+      <div class="kpi-hint">← اضغط لعرض تفاصيل الفارق</div>
+    </div>
     <div class="kpi" style="color:var(--green)">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#065f46,var(--green),transparent)"></div>
       <div class="kpi-glow" style="background:var(--green)"></div>
@@ -667,6 +669,10 @@ function renderModal(data,entityName){
   const qiwaOnly=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط').length;
   const issues=data.filter(r=>r.status!=='مطابق').length;
 
+  /* تحديث العنوان بعدد الموظفين */
+  document.getElementById('modalTitle').textContent=entityName+' — قائمة الموظفين ('+total+')';
+  document.getElementById('modalSub').textContent='GOSI · Qiwa · مقارنة وتطابق';
+
   document.getElementById('modalStats').innerHTML=`
     <div class="mstat"><div class="n" style="color:var(--teal)">${total}</div><div class="l">إجمالي السجلات</div></div>
     <div class="mstat"><div class="n" style="color:var(--green)">${matched}</div><div class="l">مطابق</div></div>
@@ -730,6 +736,96 @@ function renderEmpTable(data,filter){
         }).join('')}
       </tbody>
     </table>`;
+}
+
+/* ══ بيانات فروقات قوى — GOSI بدون عقد ساري ══ */
+const QIWA_GAPS=[
+  {name:'فتحي ياسر - حسن',       co:'TMSS',      reason:'عقده بانتظار موافقة العامل على التعديل',     sev:'m'},
+  {name:'SHAMEEMUDDIN MOHAMMED', co:'TMSS',      reason:'عقده بانتظار موافقة العامل على التعديل',     sev:'m'},
+  {name:'SHAFEEQ AHAMED KUTTY',  co:'TMSS',      reason:'عقده بانتظار موافقة العامل على التعديل',     sev:'m'},
+  {name:'KSANGHALA DEWMINI',     co:'Daem-JED',  reason:'جميع عقوده منتهية أو ملغاة — لا يوجد عقد ساري', sev:'h'},
+  {name:'MOHAMMED FAVAS USMAN',  co:'Daem-JED',  reason:'4 عقود ملغاة و1 منتهي — لا يوجد عقد ساري',  sev:'h'},
+  {name:'KHALEEL MOHAMMED MAQSOOD AHMED', co:'Daem-JED', reason:'4 عقود ملغاة و2 منتهية — لا يوجد عقد ساري', sev:'h'},
+  /* عقود مزدوجة نشطة */
+  {name:'علاء فيصل سعيد عبدات', co:'THG / Al-Mumayaza', reason:'عقد مزدوج ساري في شركتين — يلزم إنهاء عقد THG القديم (2020)', sev:'h'},
+  {name:'عمر محمد بن سعيد علي',  co:'TMSS / Modern Baggage', reason:'عقد مزدوج ساري في شركتين — تحديد الشركة الصحيحة وإنهاء الآخر', sev:'h'},
+  {name:'سامى بن محمد بن احمد المولد', co:'Daem-RUH / Daem-JED', reason:'نقل من جدة للرياض — عقد داعم جدة القديم لا يزال سارياً', sev:'m'},
+  {name:'ابيه محمد الحسن الشريف',  co:'Daem-RUH / Daem-JED', reason:'نقل من جدة للرياض — عقد داعم جدة القديم لا يزال سارياً', sev:'m'},
+];
+
+function openQiwaModal(){
+  const d=gD();
+  document.getElementById('modalTitle').textContent='قوى — تفاصيل الفارق والملاحظات';
+  document.getElementById('modalSub').textContent='GOSI · Qiwa · موظفون بدون عقد ساري + عقود مزدوجة';
+
+  const gaps_no_contract=QIWA_GAPS.filter(g=>!g.co.includes('/'));
+  const gaps_double=QIWA_GAPS.filter(g=>g.co.includes('/'));
+
+  /* فلترة حسب الشركة المختارة */
+  let filtered_no=gaps_no_contract;
+  let filtered_dbl=gaps_double;
+  if(d.length===1){
+    const nm=d[0].name;
+    filtered_no=gaps_no_contract.filter(g=>g.co===nm||g.co.includes(nm));
+    filtered_dbl=gaps_double.filter(g=>g.co.includes(nm));
+  }
+
+  const total_issues=filtered_no.length+filtered_dbl.length;
+  const urgent=QIWA_GAPS.filter(g=>g.sev==='h').length;
+
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--red)">${filtered_no.length}</div><div class="l">بدون عقد ساري</div></div>
+    <div class="mstat"><div class="n" style="color:var(--amber)">${filtered_dbl.length}</div><div class="l">عقود مزدوجة</div></div>
+    <div class="mstat"><div class="n" style="color:var(--t2)">${total_issues}</div><div class="l">إجمالي المشكلات</div></div>`;
+
+  document.getElementById('modalFilters').innerHTML='';
+
+  let html='';
+
+  if(filtered_no.length){
+    html+=`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--red);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;padding:0 2px">
+      🔴 موظفون في GOSI بدون عقد ساري في قوى (${filtered_no.length})
+    </div>
+    <table class="emp-table" style="margin-bottom:16px">
+      <thead><tr>
+        <th>#</th><th>الاسم</th><th>الشركة</th><th>السبب</th><th>الإجراء</th>
+      </tr></thead>
+      <tbody>
+        ${filtered_no.map((g,i)=>`<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+          <td style="font-weight:600;color:var(--t1)">${g.name}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${g.co}</td>
+          <td style="font-size:11px;color:var(--t2)">${g.reason}</td>
+          <td><span class="${g.sev==='h'?'st-warn':'st-amber'}">${g.sev==='h'?'عاجل':'متابعة'}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  if(filtered_dbl.length){
+    html+=`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--amber);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;padding:0 2px">
+      🟡 عقود مزدوجة نشطة (${filtered_dbl.length})
+    </div>
+    <table class="emp-table">
+      <thead><tr>
+        <th>#</th><th>الاسم</th><th>الشركتان</th><th>الإجراء المطلوب</th><th>الأولوية</th>
+      </tr></thead>
+      <tbody>
+        ${filtered_dbl.map((g,i)=>`<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+          <td style="font-weight:600;color:var(--t1)">${g.name}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--amber)">${g.co}</td>
+          <td style="font-size:11px;color:var(--t2)">${g.reason}</td>
+          <td><span class="${g.sev==='h'?'st-warn':'st-amber'}">${g.sev==='h'?'عاجل':'متابعة'}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  if(!html) html='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد مشكلات للشركة المختارة</div>';
+
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('open');
 }
 
 /* ══ CONFIG ══ */
@@ -949,7 +1045,10 @@ function openKpiModal(type){
         ${co.filter(c=>EMP_DATA[c.id]).map(c=>`
           <div onclick="openEmpModal('${c.id}','${c.name}')" style="background:var(--deep);border:1px solid var(--b0);border-radius:10px;padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(45,212,191,.3)'" onmouseout="this.style.borderColor='rgba(45,212,191,.08)'">
             <span style="font-weight:600;color:var(--t1)">${c.name}</span>
-            <span style="font-family:var(--mono);font-size:10px;color:var(--teal)">عرض ←</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--t2)">${EMP_DATA[c.id].data.length} موظف</span>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--teal)">عرض ←</span>
+            </div>
           </div>`).join('')}
         ${co.filter(c=>!EMP_DATA[c.id]).map(c=>`
           <div style="background:rgba(18,28,54,.3);border:1px solid var(--b0);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;opacity:.5">
