@@ -681,8 +681,6 @@ function renderModal(data,entityName){
   document.getElementById('modalFilters').innerHTML=`
     <button class="mf-btn active" onclick="filterModal('all',this)">الكل (${total})</button>
     <button class="mf-btn" onclick="filterModal('matched',this)">✓ مطابق (${matched})</button>
-    <button class="mf-btn" onclick="filterModal('gosi',this)">GOSI فقط (${gosiOnly})</button>
-    <button class="mf-btn" onclick="filterModal('qiwa',this)">Qiwa فقط (${qiwaOnly})</button>
     <button class="mf-btn" onclick="filterModal('issues',this)">⚠ يحتاج مراجعة (${issues})</button>`;
 
   renderEmpTable(data,'all');
