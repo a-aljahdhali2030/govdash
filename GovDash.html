@@ -232,7 +232,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       </div>
       <div class="kpi-hint">← اضغط لعرض تفاصيل الفارق</div>
     </div>
-    <div class="kpi" style="color:var(--green)">
+    <div class="kpi kpi-clickable" style="color:var(--green)" onclick="openIqamaModal()" title="اضغط لعرض الإقامات المنتهية قريباً">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#065f46,var(--green),transparent)"></div>
       <div class="kpi-glow" style="background:var(--green)"></div>
       <div class="kpi-lbl">الإقامات الفعّالة</div><div class="kpi-sub">ACTIVE IQAMAS · MUQEEM</div>
@@ -240,7 +240,9 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       <div class="kpi-rows">
         <div class="krow"><span class="krow-l">منتهية</span><span class="krow-v cr" id="kEiq">—</span></div>
         <div class="krow"><span class="krow-l">تنتهي &lt;30 يوم</span><span class="krow-v ca" id="kNiq">—</span></div>
-      </div></div>
+      </div>
+      <div class="kpi-hint">← اضغط لعرض التفاصيل</div>
+    </div>
     <div class="kpi warn" style="color:var(--amber)">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#78350f,var(--amber),transparent)"></div>
       <div class="kpi-glow" style="background:var(--amber)"></div>
@@ -734,6 +736,69 @@ function renderEmpTable(data,filter){
         }).join('')}
       </tbody>
     </table>`;
+}
+
+/* ══ بيانات الإقامات المنتهية قريباً — أغسطس 2026 ══ */
+const IQAMA_EXPIRING=[
+  {name:'MOHAMMED FAVAS USMAN',          co:'Daem-JED', expiry:'2026-07-27', days:2,  nat:'الهند',    sev:'h'},
+  {name:'JOJO ATIENZA TAYAG',            co:'Daem-JED', expiry:'2026-08-17', days:23, nat:'الفلبين',  sev:'h'},
+  {name:'SYED INAM UR REHMAN SYED RIAZ UR REHMAN', co:'Daem-JED', expiry:'2026-08-20', days:26, nat:'الهند', sev:'h'},
+  {name:'ZAID AHMED - IRFAN',            co:'THG',      expiry:'2026-08-29', days:35, nat:'الهند',    sev:'m'},
+];
+
+function openIqamaModal(){
+  const d=gD();
+  let filtered=IQAMA_EXPIRING;
+  if(d.length===1){
+    const nm=d[0].name;
+    filtered=IQAMA_EXPIRING.filter(r=>r.co===nm||r.co.includes(nm.replace('Daem- ','Daem-')));
+  }
+
+  const urgent=filtered.filter(r=>r.days<=7).length;
+  const soon=filtered.filter(r=>r.days>7&&r.days<=30).length;
+  const later=filtered.filter(r=>r.days>30).length;
+
+  document.getElementById('modalTitle').textContent='الإقامات المنتهية خلال أغسطس 2026 ('+filtered.length+')';
+  document.getElementById('modalSub').textContent='MUQEEM · Iqama Expiry · August 2026';
+
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--red)">${urgent}</div><div class="l">خلال 7 أيام 🔴</div></div>
+    <div class="mstat"><div class="n" style="color:var(--amber)">${soon}</div><div class="l">خلال 30 يوم 🟡</div></div>
+    <div class="mstat"><div class="n" style="color:var(--blue)">${later}</div><div class="l">بعد 30 يوم 🔵</div></div>`;
+
+  document.getElementById('modalFilters').innerHTML='';
+
+  if(!filtered.length){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد إقامات تنتهي للشركة المختارة</div>';
+  }else{
+    document.getElementById('modalBody').innerHTML=`
+      <table class="emp-table">
+        <thead><tr>
+          <th>#</th><th>الاسم</th><th>الشركة</th><th>الجنسية</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th>
+        </tr></thead>
+        <tbody>
+          ${filtered.map((r,i)=>{
+            const clr=r.days<=7?'var(--red)':r.days<=30?'var(--amber)':'var(--blue)';
+            const badge=r.days<=7?'st-warn':r.days<=30?'st-amber':'';
+            const label=r.days<=7?'عاجل جداً':r.days<=30?'قريباً':'متابعة';
+            return `<tr>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+              <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
+              <td style="font-size:11px;color:var(--t2)">${r.nat}</td>
+              <td style="font-family:var(--mono);font-size:11px;color:${clr}">${r.expiry}</td>
+              <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:${clr};text-align:center">${r.days}</td>
+              <td><span class="${badge}" style="${!badge?'font-family:var(--mono);font-size:8px;color:var(--blue)':''}">${label}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:11px;color:var(--t2)">
+        ⚠ يرجى مراجعة وتجديد الإقامات قبل انتهائها لتجنب المخالفات
+      </div>`;
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
 }
 
 /* ══ بيانات فروقات قوى — GOSI بدون عقد ساري ══ */
