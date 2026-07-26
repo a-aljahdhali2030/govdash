@@ -1132,7 +1132,7 @@ function rKPI(d){
   set('kAtt',ns(d,'attested'));set('kUn',ns(d,'unattested'));set('kDiff',ns(d,'diff'));
   set('kIq',ns(d,'activeIqamas'));set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
   const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
-  set('kWP',wpi+wpa+wpe);set('kWPi',wpi);set('kWPe',wpa+wpe);
+  set('kWP',wpi);set('kWPi',wpi);set('kWPe',wpa+wpe);
   const act=d.filter(c=>c.qiwaStatus==='Active').length;
   set('kAct',act+'/'+d.length);set('kIn',d.length-act);
 }
