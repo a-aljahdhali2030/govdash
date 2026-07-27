@@ -1444,14 +1444,14 @@ function rWP(d){
   const expLt60=d.map(c=>pN(c.expLt60));
   const expGt90=d.map(c=>pN(c.expGt90));
   const expired=d.map(c=>pN(c.expired));
-  wpCh=new Chart(canvas,{type:'bar',data:{labels,datasets:[{label:'إجمالي الرخص',data:issued,backgroundColor:'rgba(45,212,191,.75)',borderRadius:4},{label:'تحتاج إجراء',data:action,backgroundColor:'rgba(248,113,113,.8)',borderRadius:4},{label:'تنتهي <30',data:expiring,backgroundColor:'rgba(251,191,36,.75)',borderRadius:4},{label:'معلقة <60',data:expLt60,backgroundColor:'rgba(96,165,250,.7)',borderRadius:4},{label:'معلقة >90',data:expGt90,backgroundColor:'rgba(167,139,250,.7)',borderRadius:4},{label:'منتهية',data:expired,backgroundColor:'rgba(239,68,68,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',rtl:true,labels:{boxWidth:10,boxHeight:10,padding:10,color:'#7fa8c8',font:{size:9}}},tooltip:{...TT,rtl:true}},scales:{x:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9},maxRotation:30}},y:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}},beginAtZero:true}}}});
+  wpCh=new Chart(canvas,{type:'bar',data:{labels,datasets:[{label:'إجمالي الرخص',data:issued,backgroundColor:'rgba(45,212,191,.75)',borderRadius:4},{label:'تحتاج إجراء',data:action,backgroundColor:'rgba(248,113,113,.8)',borderRadius:4},{label:'تنتهي <30',data:expiring,backgroundColor:'rgba(251,191,36,.75)',borderRadius:4},{label:'تنتهي <60',data:expLt60,backgroundColor:'rgba(96,165,250,.7)',borderRadius:4},{label:'تنتهي >90',data:expGt90,backgroundColor:'rgba(167,139,250,.7)',borderRadius:4},{label:'منتهية',data:expired,backgroundColor:'rgba(239,68,68,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',rtl:true,labels:{boxWidth:10,boxHeight:10,padding:10,color:'#7fa8c8',font:{size:9}}},tooltip:{...TT,rtl:true}},scales:{x:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9},maxRotation:30}},y:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}},beginAtZero:true}}}});
   const sub=$('wpSubStats');
   if(sub)sub.innerHTML=[
     {lbl:'إجمالي الرخص',val:issued.reduce((a,b)=>a+b,0),c:'var(--teal)'},
     {lbl:'تحتاج إجراء',val:action.reduce((a,b)=>a+b,0),c:'var(--red)'},
     {lbl:'تنتهي <30',val:expiring.reduce((a,b)=>a+b,0),c:'var(--amber)'},
-    {lbl:'معلقة <60',val:expLt60.reduce((a,b)=>a+b,0),c:'var(--blue)'},
-    {lbl:'معلقة >90',val:expGt90.reduce((a,b)=>a+b,0),c:'var(--purple)'},
+    {lbl:'تنتهي <60',val:expLt60.reduce((a,b)=>a+b,0),c:'var(--blue)'},
+    {lbl:'تنتهي >90',val:expGt90.reduce((a,b)=>a+b,0),c:'var(--purple)'},
     {lbl:'منتهية',val:expired.reduce((a,b)=>a+b,0),c:'var(--red)'}
   ].map(s=>`<div style="background:var(--deep);border:1px solid var(--b0);border-radius:9px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:3px">${s.lbl}</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${s.c}">${s.val}</div></div>`).join('');
 }
