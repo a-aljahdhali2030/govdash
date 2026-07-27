@@ -981,7 +981,10 @@ const ID_MAP={
    Q=16 WPS Notes
    R=17 Permit Issuance
    S=18 WP Action
-   T=19 Expiring <30
+   T=19 Expiring <30 Days
+   U=20 Pending <60 Days
+   V=21 Pending >90 Days
+   W=22 Expired Work Permits
    X=23 Expiry Date
    Y=24 Mudad Status
    Z=25 Compl Rate (%)
@@ -1056,8 +1059,10 @@ function parseCSV(text){
       wpRate:     gP(row,15),
       permitIssuance: gN(row,17),
       wpAction:   gN(row,18),
-      expLt30:    gN(row,19),
-      expired:    gN(row,22),
+      expLt30:    gN(row,19),   // T Expiring <30 Days
+      expLt60:    gN(row,20),   // U Pending <60 Days
+      expGt90:    gN(row,21),   // V Pending >90 Days
+      expired:    gN(row,22),   // W Expired Work Permits
       wpExpiry:   g(row,23),
       mudadStatus:    g(row,24),
       mudadCompliance:gP(row,25),
