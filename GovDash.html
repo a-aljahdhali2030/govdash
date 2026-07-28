@@ -799,7 +799,7 @@ function renderEmpTable(data,filter){
 const WP_EXPIRING={
   'THG':{
     lt30:[{name:'ZAID AHMED IRFAN',id:'2162282178',exp:'26/08/2026',days:30}],
-    lt60:[{name:'MOHAMED ABDULHAMEED',id:'2096934266',exp:'23/09/2026',days:58}],
+    lt60:[],
     lt90:[{name:'مصعب ابوعبيده عبدالله الكي',id:'2138318205',exp:'14/10/2026',days:79}]
   },
   'TMSS':{
@@ -808,9 +808,7 @@ const WP_EXPIRING={
     lt90:[{name:'فتحي ياسر حسن',id:'2028740302',exp:'07/10/2026',days:72}]
   },
   'Daem-JED':{
-    lt30:[{name:'MOHAMMED FAVAS USMAN',id:'2505768735',exp:'24/07/2026',days:-3,expired:true}],
-    lt60:[],
-    lt90:[]
+    lt30:[],lt60:[],lt90:[]
   },
   'Al-Mumayaza':{
     lt30:[],lt60:[],
@@ -820,66 +818,23 @@ const WP_EXPIRING={
     lt30:[],
     lt60:[
       {name:'HABIBUR RAHMAN NAZRUL ISLAM',id:'2494484328',exp:'01/09/2026',days:36},
-      {name:'AMRUTHA PARASAD PERU PURAYL',id:'2509701898',exp:'01/09/2026',days:36},
-      {name:'GRACE BUCANEG CORPUZ',id:'2346391291',exp:'01/09/2026',days:36},
-      {name:'EVANGELINE SILAB PAYAPAYA',id:'2292317886',exp:'01/09/2026',days:36},
-      {name:'RILETH MAE GALARSE MONTILLA',id:'2444817833',exp:'01/09/2026',days:36},
-      {name:'ABDULLAH UMAR KALIFATHULLAH',id:'2563511670',exp:'03/09/2026',days:38},
-      {name:'AFSAL THATTARAKKADAN ANIL BABU',id:'2509729188',exp:'06/09/2026',days:41},
-      {name:'ابراهيم عوض محمد محمد',id:'2174388302',exp:'07/09/2026',days:42},
-      {name:'TUAN RIZVI AMITH',id:'2509986515',exp:'07/09/2026',days:42},
-      {name:'ZAIN ULABIDIN FAROOQ AHMAD',id:'2436172403',exp:'08/09/2026',days:43},
       {name:'SAIFUALLAH KHAN MUHAMMAD NASIR KHAN',id:'2609213042',exp:'10/09/2026',days:45},
       {name:'KRISHNA KHAWAS',id:'2582137598',exp:'12/09/2026',days:47},
       {name:'BHIM BAHADUR BASNET',id:'2582136228',exp:'12/09/2026',days:47},
       {name:'ABDUL DIDAR ALAM',id:'2582137804',exp:'12/09/2026',days:47},
-      {name:'MOHAMMED SABEEL MOHAMMED SIRAJ',id:'2579695731',exp:'14/09/2026',days:49},
-      {name:'SOULEYMAN SOUGUI FOUSSARI ALI',id:'2182901229',exp:'18/09/2026',days:53},
-      {name:'NEJEER MURINGOLI PUTHIYAPURA',id:'2586963155',exp:'18/09/2026',days:53},
-      {name:'REHAN KHAN GULAM',id:'2487156123',exp:'19/09/2026',days:54},
-      {name:'AMRIT KUMAR MAJHI',id:'2538506722',exp:'20/09/2026',days:55},
-      {name:'HEMANT KUMAR KHAN',id:'2538506516',exp:'20/09/2026',days:55},
-      {name:'SHAMBHU KUMAR MAJHI',id:'2538506839',exp:'20/09/2026',days:55},
-      {name:'SUNILKUMAR CHAUDHARY',id:'2538521929',exp:'20/09/2026',days:55},
-      {name:'MOHAMED FAISAL ABDUL SALAM',id:'2546420643',exp:'21/09/2026',days:56},
-      {name:'RIZWAN SHEGUNSHI',id:'2596061495',exp:'21/09/2026',days:56},
-      {name:'MANSOOR AHMAD MANZOOR AHMAD',id:'2584752949',exp:'22/09/2026',days:57},
-      {name:'DIN MOHAMMAD NIZAM UDDIN',id:'2462810413',exp:'24/09/2026',days:59},
     ],
     lt90:[
       {name:'فيصل دماج',id:'2088654237',exp:'26/09/2026',days:61},
       {name:'MONJIL HOSSAIN',id:'2515482152',exp:'26/09/2026',days:61},
-      {name:'KAMLESH KUMAR',id:'2539278883',exp:'30/09/2026',days:65},
-      {name:'HAFIS MUHAMMED CHERUKARA KUNNUMMAL',id:'2602681815',exp:'30/09/2026',days:65},
-      {name:'DIPENDRA ADHIKARI',id:'2504743531',exp:'03/10/2026',days:68},
-      {name:'MOHAMMED SHAFRAS SHARIFDEEN',id:'2565321995',exp:'03/10/2026',days:68},
-      {name:'MUHAMMED ROSHAN ULLATTUPARA',id:'2505739595',exp:'05/10/2026',days:70},
-      {name:'تمام عبدالعزيز الدياب',id:'2210759664',exp:'09/10/2026',days:74},
-      {name:'AKBAR KHAN MOHAMMAD',id:'2539304630',exp:'10/10/2026',days:75},
-      {name:'SIDDIQ SHAIK ABDUL SULTANA',id:'2425782352',exp:'11/10/2026',days:76},
-      {name:'HALEEM BILAL SAB',id:'2533272791',exp:'11/10/2026',days:76},
-      {name:'FASLU RAHMAN CHELATHADATHIL',id:'2552224400',exp:'11/10/2026',days:76},
       {name:'BAQTIYAR AHMED LAYEEQ AHMED',id:'2273872404',exp:'12/10/2026',days:77},
-      {name:'ABOOTHAHIR KALLU VALAPPIL',id:'2541084428',exp:'12/10/2026',days:77},
-      {name:'ZEESHAN JABBAR',id:'2581811144',exp:'12/10/2026',days:77},
-      {name:'SUNIL VASANTHA SUVARNA',id:'2546360047',exp:'15/10/2026',days:80},
-      {name:'YASIR CHOORAPPULAN',id:'2154826396',exp:'16/10/2026',days:81},
-      {name:'TAFHEEM AHMED CHAMUNDI',id:'2540693732',exp:'19/10/2026',days:84},
-      {name:'KSANGHALA DEWMINI',id:'2242795025',exp:'20/10/2026',days:85},
-      {name:'SOMUN MIAH',id:'2501488999',exp:'22/10/2026',days:87},
-      {name:'SYED KAUNAIN',id:'2541182669',exp:'23/10/2026',days:88},
-      {name:'MOHAMMED AMEEN YOUSUF PAKKIYAN',id:'2506000088',exp:'24/10/2026',days:89},
     ]
   },
   'Daem-KHB':{
     lt30:[],
     lt60:[
-      {name:'JHUN REIL NORICO ALAYON',id:'2479607687',exp:'29/08/2026',days:33},
-      {name:'MOHAMMED SHAFEEK KAPPILAKATH',id:'2385005497',exp:'09/09/2026',days:44},
       {name:'SHAMBHU KUMAR SAH',id:'2582136517',exp:'12/09/2026',days:47},
-      {name:'ALI ZAIB AWAN JAHAN ZAIB AWAN',id:'2579991775',exp:'22/09/2026',days:57},
     ],
-    lt90:[{name:'BILAL MOHAMMED ALI EDUVAMMAL KALAKAPPARA',id:'2510915446',exp:'01/10/2026',days:66}]
+    lt90:[]
   }
 };
 
