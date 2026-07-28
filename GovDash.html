@@ -835,7 +835,11 @@ const WP_EXPIRING={
       {name:'SHAMBHU KUMAR SAH',id:'2582136517',exp:'12/09/2026',days:47},
     ],
     lt90:[]
-  }
+  },
+  'Modern-Baggage':{lt30:[],lt60:[],lt90:[]},
+  'Daem-JED-branch':{lt30:[],lt60:[],lt90:[]},
+  'Mostdam':{lt30:[],lt60:[],lt90:[]},
+  'Nassem':{lt30:[],lt60:[],lt90:[]}
 };
 
 function openWPModal(entityId,entityName){
@@ -845,15 +849,20 @@ function openWPModal(entityId,entityName){
   document.getElementById('modalFilters').innerHTML='';
 
   let lt30=[],lt60=[],lt90=[];
-  if(entityId&&wp){
-    lt30=wp.lt30||[];lt60=wp.lt60||[];lt90=wp.lt90||[];
-  }else{
-    Object.values(WP_EXPIRING).forEach(v=>{
-      lt30=[...lt30,...(v.lt30||[])];
-      lt60=[...lt60,...(v.lt60||[])];
-      lt90=[...lt90,...(v.lt90||[])];
+  if(entityId&&entityId!=='all'&&wp){
+    lt30=wp.lt30||[];
+    lt60=wp.lt60||[];
+    lt90=wp.lt90||[];
+  }else if(!entityId||entityId==='all'){
+    const coNames={'THG':'THG','TMSS':'TMSS','Daem-JED':'Daem-JED','Al-Mumayaza':'Al-Mumayaza','Daem-RUH':'Daem-RUH','Daem-KHB':'Daem-KHB'};
+    Object.entries(WP_EXPIRING).forEach(([k,v])=>{
+      const cn=coNames[k]||k;
+      lt30=[...lt30,...(v.lt30||[]).map(r=>({...r,co:cn}))];
+      lt60=[...lt60,...(v.lt60||[]).map(r=>({...r,co:cn}))];
+      lt90=[...lt90,...(v.lt90||[]).map(r=>({...r,co:cn}))];
     });
   }
+  /* إذا الشركة محددة وليس لها بيانات في WP_EXPIRING — لا يوجد */
 
   document.getElementById('modalStats').innerHTML=`
     <div class="mstat"><div class="n" style="color:var(--red)">${lt30.length}</div><div class="l">🔴 تنتهي خلال 30 يوم</div></div>
@@ -861,33 +870,40 @@ function openWPModal(entityId,entityName){
     <div class="mstat"><div class="n" style="color:var(--blue)">${lt90.length}</div><div class="l">🔵 تنتهي خلال 90 يوم</div></div>`;
 
   function tableRows(arr,clr){
-    if(!arr.length)return '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:12px">لا يوجد</td></tr>';
+    if(!arr.length)return '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:12px">لا يوجد</td></tr>';
+    const showCo=arr.some(r=>r.co);
     return arr.map((r,i)=>`<tr>
       <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
       <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+      ${showCo?`<td style="font-family:var(--mono);font-size:10px;color:var(--teal)">${r.co||'—'}</td>`:''}
       <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.id}</td>
       <td style="font-family:var(--mono);font-size:11px;font-weight:700;color:${clr}">${r.exp}</td>
       <td style="font-family:var(--mono);font-size:11px;color:${clr};text-align:center">${r.days<0?'منتهية':r.days+' يوم'}</td>
     </tr>`).join('');
   }
 
+  function tableHead(arr){
+    const showCo=arr.some(r=>r.co);
+    return `<thead><tr><th>#</th><th>الاسم</th>${showCo?'<th>الشركة</th>':''}<th>رقم الهوية</th><th>تاريخ الانتهاء</th><th>المتبقي</th></tr></thead>`;
+  }
+
   document.getElementById('modalBody').innerHTML=`
     ${lt30.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--red);letter-spacing:.8px;margin:8px 0 6px">🔴 تنتهي خلال 30 يوم (${lt30.length})</div>
     <table class="emp-table" style="margin-bottom:16px">
-      <thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>تاريخ الانتهاء</th><th>المتبقي</th></tr></thead>
+      ${tableHead(lt30)}
       <tbody>${tableRows(lt30,'var(--red)')}</tbody>
     </table>`:''}
     ${lt60.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--amber);letter-spacing:.8px;margin:8px 0 6px">🟡 تنتهي خلال 60 يوم (${lt60.length})</div>
     <table class="emp-table" style="margin-bottom:16px">
-      <thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>تاريخ الانتهاء</th><th>المتبقي</th></tr></thead>
+      ${tableHead(lt60)}
       <tbody>${tableRows(lt60,'var(--amber)')}</tbody>
     </table>`:''}
     ${lt90.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--blue);letter-spacing:.8px;margin:8px 0 6px">🔵 تنتهي خلال 90 يوم (${lt90.length})</div>
     <table class="emp-table">
-      <thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>تاريخ الانتهاء</th><th>المتبقي</th></tr></thead>
+      ${tableHead(lt90)}
       <tbody>${tableRows(lt90,'var(--blue)')}</tbody>
     </table>`:''}
-  `;
+    ${!lt30.length&&!lt60.length&&!lt90.length?'<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد رخص منتهية قريباً</div>':''}
   document.getElementById('modalOverlay').classList.add('open');
 }
 const IQAMA_EXPIRING=[
