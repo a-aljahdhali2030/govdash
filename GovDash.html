@@ -904,6 +904,7 @@ function openWPModal(entityId,entityName){
       <tbody>${tableRows(lt90,'var(--blue)')}</tbody>
     </table>`:''}
     ${!lt30.length&&!lt60.length&&!lt90.length?'<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد رخص منتهية قريباً</div>':''}
+  `;
   document.getElementById('modalOverlay').classList.add('open');
 }
 const IQAMA_EXPIRING=[
