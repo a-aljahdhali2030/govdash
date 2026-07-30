@@ -796,6 +796,8 @@ function renderEmpTable(data,filter){
 }
 
 /* ══ بيانات رخص العمل المنتهية قريباً ══ */
+/* حساب أيام رخص العمل تلقائياً */
+function wpDays(d){return calcDays(d.split('/').reverse().join('-'));}
 const WP_EXPIRING={
   'THG':{
     lt30:[{name:'ZAID AHMED IRFAN',id:'2162282178',exp:'26/08/2026',days:30}],
@@ -848,22 +850,29 @@ function openWPModal(entityId,entityName){
   document.getElementById('modalSub').textContent='WORK PERMITS EXPIRY · 30 · 60 · 90 DAYS';
   document.getElementById('modalFilters').innerHTML='';
 
+  /* إعادة حساب أيام رخص العمل عند كل فتح */
+  function recalcWP(arr){return (arr||[]).map(r=>({...r,days:wpDays(r.exp)}));}
   let lt30=[],lt60=[],lt90=[];
   if(entityId&&entityId!=='all'&&wp){
-    lt30=wp.lt30||[];
-    lt60=wp.lt60||[];
-    lt90=wp.lt90||[];
+    lt30=recalcWP(wp.lt30);
+    lt60=recalcWP(wp.lt60);
+    lt90=recalcWP(wp.lt90);
   }else if(!entityId||entityId==='all'){
     const coNames={'THG':'THG','TMSS':'TMSS','Daem-JED':'Daem-JED','Al-Mumayaza':'Al-Mumayaza','Daem-RUH':'Daem-RUH','Daem-KHB':'Daem-KHB'};
     Object.entries(WP_EXPIRING).forEach(([k,v])=>{
       const cn=coNames[k]||k;
-      lt30=[...lt30,...(v.lt30||[]).map(r=>({...r,co:cn}))];
-      lt60=[...lt60,...(v.lt60||[]).map(r=>({...r,co:cn}))];
-      lt90=[...lt90,...(v.lt90||[]).map(r=>({...r,co:cn}))];
+      lt30=[...lt30,...recalcWP(v.lt30).map(r=>({...r,co:cn}))];
+      lt60=[...lt60,...recalcWP(v.lt60).map(r=>({...r,co:cn}))];
+      lt90=[...lt90,...recalcWP(v.lt90).map(r=>({...r,co:cn}))];
     });
   }
   /* إذا الشركة محددة وليس لها بيانات في WP_EXPIRING — لا يوجد */
 
+  /* إعادة تصنيف بناءً على الأيام الفعلية */
+  const allWP=[...lt30,...lt60,...lt90];
+  lt30=allWP.filter(r=>r.days<=30);
+  lt60=allWP.filter(r=>r.days>30&&r.days<=60);
+  lt90=allWP.filter(r=>r.days>60&&r.days<=90);
   document.getElementById('modalStats').innerHTML=`
     <div class="mstat"><div class="n" style="color:var(--red)">${lt30.length}</div><div class="l">🔴 تنتهي خلال 30 يوم</div></div>
     <div class="mstat"><div class="n" style="color:var(--amber)">${lt60.length}</div><div class="l">🟡 تنتهي خلال 60 يوم</div></div>
@@ -907,12 +916,23 @@ function openWPModal(entityId,entityName){
   `;
   document.getElementById('modalOverlay').classList.add('open');
 }
-const IQAMA_EXPIRING=[
-  {name:'MOHAMMED FAVAS USMAN',          co:'Daem-JED', expiry:'2026-07-27', days:2,  nat:'الهند',    sev:'h'},
-  {name:'JOJO ATIENZA TAYAG',            co:'Daem-JED', expiry:'2026-08-17', days:23, nat:'الفلبين',  sev:'h'},
-  {name:'SYED INAM UR REHMAN SYED RIAZ UR REHMAN', co:'Daem-JED', expiry:'2026-08-20', days:26, nat:'الهند', sev:'h'},
-  {name:'ZAID AHMED - IRFAN',            co:'THG',      expiry:'2026-08-29', days:35, nat:'الهند',    sev:'m'},
+/* دالة حساب الأيام تلقائياً من تاريخ اليوم */
+function calcDays(dateStr){
+  const today=new Date();today.setHours(0,0,0,0);
+  const parts=dateStr.includes('-')?dateStr.split('-'):[dateStr.split('/')[2],dateStr.split('/')[1],dateStr.split('/')[0]];
+  const exp=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  return Math.round((exp-today)/(1000*60*60*24));
+}
+function calcSev(days){return days<=7?'h':days<=30?'m':'l';}
+
+const IQAMA_RAW=[
+  {name:'MOHAMMED FAVAS USMAN',          co:'Daem-JED', expiry:'2026-07-27', nat:'الهند'},
+  {name:'JOJO ATIENZA TAYAG',            co:'Daem-JED', expiry:'2026-08-17', nat:'الفلبين'},
+  {name:'SYED INAM UR REHMAN SYED RIAZ UR REHMAN', co:'Daem-JED', expiry:'2026-08-20', nat:'الهند'},
+  {name:'ZAID AHMED - IRFAN',            co:'THG',      expiry:'2026-08-29', nat:'الهند'},
 ];
+const IQAMA_EXPIRING=IQAMA_RAW.map(r=>({...r,days:calcDays(r.expiry),sev:calcSev(calcDays(r.expiry))}));
+
 
 function openIqamaModal(){
   const d=gD();
@@ -922,6 +942,8 @@ function openIqamaModal(){
     filtered=IQAMA_EXPIRING.filter(r=>r.co===nm||r.co.includes(nm.replace('Daem- ','Daem-')));
   }
 
+  /* إعادة حساب الأيام عند كل فتح */
+  filtered=filtered.map(r=>({...r,days:calcDays(r.expiry),sev:calcSev(calcDays(r.expiry))}));
   const urgent=filtered.filter(r=>r.days<=7).length;
   const soon=filtered.filter(r=>r.days>7&&r.days<=30).length;
   const later=filtered.filter(r=>r.days>30).length;
