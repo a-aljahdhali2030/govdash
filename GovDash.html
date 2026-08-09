@@ -348,6 +348,15 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div></div></div><div id="empSec"></div></div>
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">Issued Visas</div><div class="en">ISSUED VISAS</div></div><div class="sec-line"></div></div>
+  <div class="kpi kpi-clickable" style="color:var(--purple);max-width:280px" onclick="openVisaModal()" title="Click to view issued visas">
+    <div class="kpi-acc" style="background:linear-gradient(90deg,#581c87,var(--purple),transparent)"></div>
+    <div class="kpi-glow" style="background:var(--purple)"></div>
+    <div class="kpi-lbl">Total Issued Visas</div><div class="kpi-sub">ISSUED VISAS · TOTAL</div>
+    <div class="kpi-val cp" id="kVisa">—</div>
+    <div class="kpi-hint">← Click for details</div>
+  </div>
+
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -895,6 +904,71 @@ function openQiwaModal(){
   document.getElementById('modalOverlay').classList.add('open');
 }
 
+/* ══ التأشيرات الصادرة ══ */
+const VISA_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=2097773823&single=true&output=csv';
+let VISA_RAW=null;
+
+async function fetchVisaRaw(){
+  try{
+    const res=await fetch(VISA_CSV_URL+(VISA_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
+    const text=await res.text();
+    const rows=parseSimpleCSV(text);
+    return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({
+      co:(r[0]||'').trim(),
+      name:(r[1]||'').trim(),
+      iqamaNo:(r[2]||'').trim(),
+      duration:(r[3]||'').trim()
+    }));
+  }catch(e){return null;}
+}
+
+async function refreshVisaCount(){
+  const data=await fetchVisaRaw();
+  const el=document.getElementById('kVisa');
+  if(!el)return;
+  el.textContent=data===null?'—':data.length;
+}
+
+async function openVisaModal(){
+  document.getElementById('modalTitle').textContent='Issued Visas';
+  document.getElementById('modalSub').textContent='ISSUED VISAS · Name · Iqama No. · Duration';
+  document.getElementById('modalFilters').innerHTML='';
+  document.getElementById('modalStats').innerHTML='';
+  document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">Loading...</div>';
+  document.getElementById('modalOverlay').classList.add('open');
+
+  VISA_RAW=await fetchVisaRaw();
+  if(VISA_RAW===null){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">Failed to load visa data — check VISA_CSV_URL</div>';
+    return;
+  }
+
+  document.getElementById('modalTitle').textContent='Issued Visas ('+VISA_RAW.length+')';
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--purple)">${VISA_RAW.length}</div><div class="l">Total Visas</div></div>`;
+
+  if(!VISA_RAW.length){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">No visas recorded</div>';
+    return;
+  }
+
+  document.getElementById('modalBody').innerHTML=`
+    <table class="emp-table">
+      <thead><tr>
+        <th>#</th><th>Name</th><th>Company</th><th>Iqama No.</th><th>Visa Duration</th>
+      </tr></thead>
+      <tbody>
+        ${VISA_RAW.map((r,i)=>`<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+          <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.iqamaNo||'—'}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--purple)">${r.duration||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
 /* ══ CONFIG ══ */
 const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=1444680887&single=true&output=csv';
 const POLL_MS=60000;
@@ -1072,7 +1146,9 @@ function applyData(data){
 
 document.addEventListener('DOMContentLoaded',()=>{
   fetchSheet();
+  refreshVisaCount();
   _poll=setInterval(fetchSheet,POLL_MS);
+  setInterval(refreshVisaCount,POLL_MS);
 });
 
 /* ══ STATE ══ */
