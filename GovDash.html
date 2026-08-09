@@ -348,15 +348,6 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div></div></div><div id="empSec"></div></div>
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
-  <div class="sec"><div class="sec-txt"><div class="ar">Issued Visas</div><div class="en">ISSUED VISAS</div></div><div class="sec-line"></div></div>
-  <div class="kpi kpi-clickable" style="color:var(--purple);max-width:280px" onclick="openVisaModal()" title="Click to view issued visas">
-    <div class="kpi-acc" style="background:linear-gradient(90deg,#581c87,var(--purple),transparent)"></div>
-    <div class="kpi-glow" style="background:var(--purple)"></div>
-    <div class="kpi-lbl">Total Issued Visas</div><div class="kpi-sub">ISSUED VISAS · TOTAL</div>
-    <div class="kpi-val cp" id="kVisa">—</div>
-    <div class="kpi-hint">← Click for details</div>
-  </div>
-
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -922,40 +913,40 @@ async function fetchVisaRaw(){
   }catch(e){return null;}
 }
 
-async function refreshVisaCount(){
+async function refreshVisaTile(){
   const data=await fetchVisaRaw();
-  const el=document.getElementById('kVisa');
+  const el=document.getElementById('kVisaTile');
   if(!el)return;
   el.textContent=data===null?'—':data.length;
 }
 
 async function openVisaModal(){
-  document.getElementById('modalTitle').textContent='Issued Visas';
-  document.getElementById('modalSub').textContent='ISSUED VISAS · Name · Iqama No. · Duration';
+  document.getElementById('modalTitle').textContent='التأشيرات الصادرة';
+  document.getElementById('modalSub').textContent='ISSUED VISAS · الاسم · رقم الاقامة · مدة التأشيرة';
   document.getElementById('modalFilters').innerHTML='';
   document.getElementById('modalStats').innerHTML='';
-  document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">Loading...</div>';
+  document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">جاري تحميل البيانات...</div>';
   document.getElementById('modalOverlay').classList.add('open');
 
   VISA_RAW=await fetchVisaRaw();
   if(VISA_RAW===null){
-    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">Failed to load visa data — check VISA_CSV_URL</div>';
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل بيانات التأشيرات — تأكد من رابط الشيت (VISA_CSV_URL)</div>';
     return;
   }
 
-  document.getElementById('modalTitle').textContent='Issued Visas ('+VISA_RAW.length+')';
+  document.getElementById('modalTitle').textContent='التأشيرات الصادرة ('+VISA_RAW.length+')';
   document.getElementById('modalStats').innerHTML=`
-    <div class="mstat"><div class="n" style="color:var(--purple)">${VISA_RAW.length}</div><div class="l">Total Visas</div></div>`;
+    <div class="mstat"><div class="n" style="color:var(--purple)">${VISA_RAW.length}</div><div class="l">إجمالي التأشيرات</div></div>`;
 
   if(!VISA_RAW.length){
-    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">No visas recorded</div>';
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">لا توجد تأشيرات مسجّلة</div>';
     return;
   }
 
   document.getElementById('modalBody').innerHTML=`
     <table class="emp-table">
       <thead><tr>
-        <th>#</th><th>Name</th><th>Company</th><th>Iqama No.</th><th>Visa Duration</th>
+        <th>#</th><th>الاسم</th><th>الشركة</th><th>رقم الاقامة</th><th>مدة التأشيرة</th>
       </tr></thead>
       <tbody>
         ${VISA_RAW.map((r,i)=>`<tr>
@@ -1146,9 +1137,7 @@ function applyData(data){
 
 document.addEventListener('DOMContentLoaded',()=>{
   fetchSheet();
-  refreshVisaCount();
   _poll=setInterval(fetchSheet,POLL_MS);
-  setInterval(refreshVisaCount,POLL_MS);
 });
 
 /* ══ STATE ══ */
@@ -1342,7 +1331,9 @@ function rWP(d){
 
 function rMuqeem(d){
   const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),l3=ns(d,'iqLt30'),l6=ns(d,'iqLt60'),x=ns(d,'exitReEntry');
-  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],[l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)'],[0,'—','—',false,'var(--t3)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('');
+  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],[l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
+    +`<div class="iqcard" style="cursor:pointer" onclick="openVisaModal()" title="اضغط لعرض التأشيرات الصادرة"><div class="n" style="color:var(--purple)" id="kVisaTile">—</div><div class="ar">التأشيرات</div><div class="en">VISAS</div></div>`;
+  refreshVisaTile();
   $('mStats').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span><span class="en">TOTAL ACTIVE</span></div><div class="v" style="color:var(--teal)">${t}</div></div><div class="srow"><div class="lbl"><span class="ar">منتهية</span><span class="en">EXPIRED</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div><div class="srow"><div class="lbl"><span class="ar">خروج وعودة</span><span class="en">EXIT/RE-ENTRY</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
   const ma=d.filter(c=>c.mudadStatus==='Active').length;
   const mc=d.filter(c=>c.mudadCompliance&&c.mudadCompliance!=='N/A');
