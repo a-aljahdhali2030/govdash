@@ -913,33 +913,38 @@ async function fetchVisaRaw(){
   }catch(e){return null;}
 }
 
-async function refreshVisaTile(){
+async function refreshVisaTile(d){
   const data=await fetchVisaRaw();
   const el=document.getElementById('kVisaTile');
   if(!el)return;
-  el.textContent=data===null?'—':data.length;
+  if(data===null){el.textContent='—';return;}
+  const filtered=(d&&d.length===1)?data.filter(r=>r.co===d[0].id):data;
+  el.textContent=filtered.length;
 }
 
 async function openVisaModal(){
-  document.getElementById('modalTitle').textContent='التأشيرات الصادرة';
+  const d=gD();
+  const single=d.length===1;
+  document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'التأشيرات الصادرة';
   document.getElementById('modalSub').textContent='ISSUED VISAS · الاسم · رقم الاقامة · مدة التأشيرة';
   document.getElementById('modalFilters').innerHTML='';
   document.getElementById('modalStats').innerHTML='';
   document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">جاري تحميل البيانات...</div>';
   document.getElementById('modalOverlay').classList.add('open');
 
-  VISA_RAW=await fetchVisaRaw();
-  if(VISA_RAW===null){
+  const raw=await fetchVisaRaw();
+  if(raw===null){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل بيانات التأشيرات — تأكد من رابط الشيت (VISA_CSV_URL)</div>';
     return;
   }
+  VISA_RAW=single?raw.filter(r=>r.co===d[0].id):raw;
 
-  document.getElementById('modalTitle').textContent='التأشيرات الصادرة ('+VISA_RAW.length+')';
+  document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'التأشيرات الصادرة ('+VISA_RAW.length+')';
   document.getElementById('modalStats').innerHTML=`
     <div class="mstat"><div class="n" style="color:var(--purple)">${VISA_RAW.length}</div><div class="l">إجمالي التأشيرات</div></div>`;
 
   if(!VISA_RAW.length){
-    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">لا توجد تأشيرات مسجّلة</div>';
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">لا توجد تأشيرات مسجّلة للشركة المختارة</div>';
     return;
   }
 
@@ -955,6 +960,76 @@ async function openVisaModal(){
           <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
           <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.iqamaNo||'—'}</td>
           <td style="font-family:var(--mono);font-size:11px;color:var(--purple)">${r.duration||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* ══ تجديد الإقامات ══ */
+const RENEWAL_CSV_URL='PASTE_RENEWALS_PUBLISHED_CSV_LINK_HERE';
+let RENEWAL_RAW=null;
+
+async function fetchRenewalRaw(){
+  try{
+    const res=await fetch(RENEWAL_CSV_URL+(RENEWAL_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
+    const text=await res.text();
+    const rows=parseSimpleCSV(text);
+    return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({
+      co:(r[0]||'').trim(),
+      name:(r[1]||'').trim(),
+      months:(r[2]||'').trim(),
+      renewDate:(r[3]||'').trim()
+    }));
+  }catch(e){return null;}
+}
+
+async function refreshRenewalTile(d){
+  const data=await fetchRenewalRaw();
+  const el=document.getElementById('kRenewTile');
+  if(!el)return;
+  if(data===null){el.textContent='—';return;}
+  const filtered=(d&&d.length===1)?data.filter(r=>r.co===d[0].id):data;
+  el.textContent=filtered.length;
+}
+
+async function openRenewalModal(){
+  const d=gD();
+  const single=d.length===1;
+  document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'تجديد الإقامات';
+  document.getElementById('modalSub').textContent='IQAMA RENEWALS · الاسم · المدة · التاريخ';
+  document.getElementById('modalFilters').innerHTML='';
+  document.getElementById('modalStats').innerHTML='';
+  document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">جاري تحميل البيانات...</div>';
+  document.getElementById('modalOverlay').classList.add('open');
+
+  const raw=await fetchRenewalRaw();
+  if(raw===null){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل بيانات التجديد — تأكد من رابط الشيت (RENEWAL_CSV_URL)</div>';
+    return;
+  }
+  RENEWAL_RAW=single?raw.filter(r=>r.co===d[0].id):raw;
+
+  document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'تجديد الإقامات ('+RENEWAL_RAW.length+')';
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--green)">${RENEWAL_RAW.length}</div><div class="l">إجمالي التجديدات</div></div>`;
+
+  if(!RENEWAL_RAW.length){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">لا توجد تجديدات مسجّلة للشركة المختارة</div>';
+    return;
+  }
+
+  document.getElementById('modalBody').innerHTML=`
+    <table class="emp-table">
+      <thead><tr>
+        <th>#</th><th>الاسم</th><th>الشركة</th><th>مدة التجديد (شهور)</th><th>تاريخ التجديد</th>
+      </tr></thead>
+      <tbody>
+        ${RENEWAL_RAW.map((r,i)=>`<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+          <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--green)">${r.months||'—'}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.renewDate||'—'}</td>
         </tr>`).join('')}
       </tbody>
     </table>`;
@@ -1332,8 +1407,10 @@ function rWP(d){
 function rMuqeem(d){
   const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),l3=ns(d,'iqLt30'),l6=ns(d,'iqLt60'),x=ns(d,'exitReEntry');
   $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],[l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
-    +`<div class="iqcard" style="cursor:pointer" onclick="openVisaModal()" title="اضغط لعرض التأشيرات الصادرة"><div class="n" style="color:var(--purple)" id="kVisaTile">—</div><div class="ar">التأشيرات</div><div class="en">VISAS</div></div>`;
-  refreshVisaTile();
+    +`<div class="iqcard" style="cursor:pointer" onclick="openVisaModal()" title="اضغط لعرض التأشيرات الصادرة"><div class="n" style="color:var(--purple)" id="kVisaTile">—</div><div class="ar">التأشيرات</div><div class="en">VISAS</div></div>`
+    +`<div class="iqcard" style="cursor:pointer" onclick="openRenewalModal()" title="اضغط لعرض تجديدات الإقامات"><div class="n" style="color:var(--green)" id="kRenewTile">—</div><div class="ar">تجديد الإقامات</div><div class="en">RENEWALS</div></div>`;
+  refreshVisaTile(d);
+  refreshRenewalTile(d);
   $('mStats').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span><span class="en">TOTAL ACTIVE</span></div><div class="v" style="color:var(--teal)">${t}</div></div><div class="srow"><div class="lbl"><span class="ar">منتهية</span><span class="en">EXPIRED</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div><div class="srow"><div class="lbl"><span class="ar">خروج وعودة</span><span class="en">EXIT/RE-ENTRY</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
   const ma=d.filter(c=>c.mudadStatus==='Active').length;
   const mc=d.filter(c=>c.mudadCompliance&&c.mudadCompliance!=='N/A');
