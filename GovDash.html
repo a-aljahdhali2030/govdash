@@ -1027,7 +1027,7 @@ function parseCSV(text){
 
   function getNotes(row){
     const acts=[];
-    [34,35].forEach(idx=>{
+    [32,33].forEach(idx=>{
       const v=(row[idx]||'').trim();
       if(!v||v.length<4)return;
       v.split('\n').forEach(line=>{
@@ -1072,9 +1072,9 @@ function parseCSV(text){
       activeIqamas:   gN(row,28),
       expiredIq:      gN(row,29),
       iqLt30:         gN(row,30),
-      iqLt60:         gN(row,31),
-      exitReEntry:    gN(row,32),
-      chamberStatus:  g(row,33),
+      iqLt60:         0,
+      exitReEntry:    0,
+      chamberStatus:  g(row,31),
       acts: getNotes(row)
     };
   }).filter(r=>r.name);
