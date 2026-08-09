@@ -377,121 +377,27 @@ const draw=()=>{ctx.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+
 addEventListener('resize',()=>{resize();init()});resize();init();draw();})();
 
 /* ══ بيانات الموظفين التفصيلية — تُحدَّث من الشيت ══ */
-const EMP_DATA={
-  'THG':{data:[
-    {name:'سيماء صلاح الدين يوسف يونس',id:'1043695756',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مصعب ابوعبيده عبدالله الكي',id:'2138318205',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'محمد اسامه علي ابوعلوه',id:'1105454712',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عبدالله عبدالعزيز ابن محمد الغامدي',id:'1064229576',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عبدالله يوسف احمد محتسب',id:'1002767349',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'MOHAMED   ABDULHAMEED',id:'2096934266',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ZAID AHMED - IRFAN',id:'2162282178',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'TMSS':{data:[
-    {name:'مهند بلال محمد هشام عبدالرحيم',id:'2396652519',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'RAHIMRAFIQAHMED JAVLIMOHAMMED  ABDULRAHIM',id:'2030562736',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'احمد عبدالمطلب بن عبدالله الجحدلي',id:'1056006305',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'SHAFEEQ AHAMED  KUTTY',id:'2212090878',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'بندر محمد سعيد المورعي',id:'1000723039',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'فتحي ياسر - حسن',id:'2028740302',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'شميم الدين - - محمد',id:'2205869908',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'بندر عبدالقادر محمد البغدادي',id:'1005920739',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'زياد سعد علي الغامدي',id:'1067051373',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عمر ظمري احمد الغامدي',id:'1061268601',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سامي محمد نور غازي فنتيانه',id:'1081060566',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عبدالمجيد نافع شميسان الفهمي',id:'1054801798',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Daem-JED':{data:[
-    {name:'JEFFERSON  CASAMAYOR EPE',id:'2457021190',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'دارين محمد عبدالرحمن خيمي',id:'1002152625',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Daem-JED-branch':{data:[
-    {name:'ربى خلف بن مشني الغامدي',id:'1105389207',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Daem-KHB':{data:[
-    {name:'مريم بنت عبدالرحمن بن سعيد العمودي',id:'1102834767',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نوره حسن بن محمد ال منصور',id:'1104400690',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Daem-RUH':{data:[
-    {name:'العنود تركي عبدالعزيز العتيبي',id:'1071999658',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'جاد بن علي بن عبدالله حيدر',id:'1104909161',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'أريج منصور صالح الضلعان',id:'1029949979',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'غفران علي عبدالقادر العمودي',id:'1086697875',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'جوري محمد عباس حياه',id:'1127811006',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'فاطمه يحي احمد هزازي',id:'1112725039',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مرام نائف بن صدقه قطب',id:'1046084651',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ابراهيم عوض محمد محمد',id:'2174388302',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مها عبدالرحمن سعيد العمودي',id:'2058683505',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'SOMUN   MIAH',id:'2501488999',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ساره محمد بن علي ال دغرير',id:'1113250342',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ابيه محمد الحسن الشريف',id:'1092246048',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سهيل محمد عبد القادر اسماعيل',id:'1089545675',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'خلف بن مشني بن مبارك الغامدي',id:'1064552894',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نسيبه بنت محمد بن عثمان الذوادي',id:'1093286746',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'MANSOOR AHMAD MANZOOR AHMAD',id:'2584752949',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'علي مانع بن صالح ال منصور',id:'1130505132',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'غفران فاروق فؤاد بحري',id:'1086307442',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سلوى فايد سليمان الرشيدي',id:'1037982202',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ساره طلال عيد الحربي',id:'1095256739',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'بندر فيصل محمد زيدان',id:'1079530737',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سامى بن محمد بن احمد المولد',id:'1061668867',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ابراهيم سليمان احمد موصلي',id:'1070478951',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'يحي مرعي علي نجعي',id:'1128793641',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'أمجاد مسفر بن علي ال ساري',id:'1103766992',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'بتول مانع بن مسفر آل هتيله',id:'1104401912',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'اشواق عمر احمد باحيدره',id:'1077528543',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'موده مرعي بن محمد العليان',id:'1107127829',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ANAS   MAHMOOD',id:'2112621848',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نسرين سلمان عبدالله الصالح',id:'1004834980',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Modern-Baggage':{data:[
-    {name:'طيف ماجد عبدالاله عشماوي',id:'1113767303',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'حمزه حسن علي الصومالي',id:'1112566862',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ريان سهيل بن سعيد الغامدي',id:'1131317453',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'هدى جمعان سعيد باظروس',id:'1134767183',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'محمد عامر احمد الغامدي',id:'1118358595',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'تركي عبدالله بن عائض المخلفي',id:'1126316429',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ندى عبدالله صديق مسرحي',id:'1103038970',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نوال عبدالرحيم بن عايش المالكي',id:'1098845181',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'SULEMAN KHAN HABIB KHAN',id:'2588586368',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'رهف عبيد سفر السلمي',id:'1117187631',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عمر محمد بن سعيد علي',id:'1026287787',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نوف مصلح حميد الجعيد',id:'1104115678',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'MUHAMMAD ASIM MUHAMMAD ARIF',id:'2584893354',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عبدالله عمر سعيد باخطيب',id:'1000618270',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'قصي محمد عبدالله أفندي',id:'1116391028',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'حنان سلطان عبدالله القحطاني',id:'1116264324',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'منيره علي عبدالله الشهري',id:'1114895566',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'فهد فواز محمود ابوالحمايل',id:'1006940389',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نواف عبدالرحمن محمد سعيد الاحمدي',id:'1120221393',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'AQIB   AMEER',id:'2616806184',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'MOHAMMED FAZAL UDDIN  AHMED',id:'2088957390',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سهيل عوض سالم البراهيم',id:'1028695938',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'روان صالح محمد العمودي',id:'1097619462',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عبدالعزيز عبدالرحمن عايد الاحمدي',id:'1036078739',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'ضي عبدالعزيز معيلي الخميسي',id:'1123455386',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'خاتون على بن عبدالكريم الفرج',id:'1005243884',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'غدي محمد احمد الغامدي',id:'1115571349',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مراد عبدالله ابن احمد العامودي',id:'1096186281',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'عفراء منصور عبدالله حسن',id:'1098076092',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'البتول طلال ابن ذياب الزهراني',id:'1104824253',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سراج محمد سراج حلواني',id:'1072755919',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نوره عبدالعزيز محمد الزهراني',id:'1115635631',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'باسل حسين علي الغامدي',id:'1096493232',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'حامد محسن علوي السيد',id:'1129277651',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سارة مبارك عوض الاحمدي',id:'1116233170',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مروج خالد بركات الشريف',id:'1048410755',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مازن حمود محمد السفري',id:'1135346359',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'نورين عبد اللطيف احمد مومن خان',id:'1057215962',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-  'Al-Mumayaza':{data:[
-    {name:'NEIL PATATA  PILSON',id:'2423150131',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'علاء فيصل سعيد عبدات',id:'1018633295',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'JOSE JR JOSE JR  NUNEZ',id:'2411900109',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'مرعي علي مرعي نجعي',id:'1073284554',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-    {name:'سلطان سعود محمد القفيدي',id:'1072611591',gosi:'نشط',qiwa:'نشط',status:'مطابق'},
-  ]},
-};
+const EMPLOYEES_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=135722820&single=true&output=csv';
+let ALL_EMP_DATA=null;
+
+async function loadAllEmpData(force){
+  if(ALL_EMP_DATA&&!force)return ALL_EMP_DATA;
+  try{
+    const res=await fetch(EMPLOYEES_CSV_URL+'&t='+Date.now());
+    const text=await res.text();
+    const rows=parseEmpCSV(text);
+    const grouped={};
+    rows.forEach(r=>{
+      const co=r.co||'—';
+      grouped[co]=grouped[co]||[];
+      grouped[co].push(r);
+    });
+    ALL_EMP_DATA=grouped;
+    return grouped;
+  }catch(e){
+    return null;
+  }
+}
 
 /* ══ MODAL ══ */
 let _modalFilter='all';
@@ -508,27 +414,21 @@ async function openEmpModal(entityId,entityName){
   document.getElementById('modalFilters').innerHTML='';
   overlay.classList.add('open');
 
-  const entry=EMP_DATA[entityId];
-  if(!entry){
+  const grouped=await loadAllEmpData(true);
+  if(grouped===null){
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل البيانات — تأكد من رابط الشيت (EMPLOYEES_CSV_URL)</div>';
+    document.getElementById('modalStats').innerHTML='';
+    return;
+  }
+
+  const data=grouped[entityId]||[];
+  if(!data.length){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">لا توجد بيانات تفصيلية لهذه الشركة بعد</div>';
     document.getElementById('modalStats').innerHTML='';
     return;
   }
 
-  /* جلب البيانات إذا لم تكن محمّلة */
-  if(!entry.data){
-    try{
-      const res=await fetch(entry.url+'&t='+Date.now());
-      const text=await res.text();
-      entry.data=parseEmpCSV(text);
-    }catch(e){
-      document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل البيانات</div>';
-      document.getElementById('modalStats').innerHTML='';
-      return;
-    }
-  }
-
-  renderModal(entry.data,entityName);
+  renderModal(data,entityName);
 }
 
 function parseEmpCSV(text){
@@ -538,19 +438,20 @@ function parseEmpCSV(text){
   const data=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i];
-    if(!r[0]||!r[0].trim())continue;
-    data.push({name:r[0].trim(),id:r[1]||'—',gosi:(r[2]||'').trim(),qiwa:(r[3]||'').trim(),status:(r[4]||'').trim()});
+    if(!r[1]||!r[1].trim())continue;
+    data.push({co:(r[0]||'').trim(),name:r[1].trim(),id:r[2]||'—',gosi:(r[3]||'').trim(),qiwa:(r[4]||'').trim(),status:(r[5]||'').trim()});
   }
   return data;
 }
 
+function isMatchedStatus(s){return s==='مطابق'||s==='Matched'||s==='matched';}
 function renderModal(data,entityName){
   _modalFilter='all';
   const total=data.length;
-  const matched=data.filter(r=>r.status==='مطابق').length;
+  const matched=data.filter(r=>isMatchedStatus(r.status)).length;
   const gosiOnly=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط').length;
   const qiwaOnly=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط').length;
-  const issues=data.filter(r=>r.status!=='مطابق').length;
+  const issues=data.filter(r=>!isMatchedStatus(r.status)).length;
 
   /* تحديث العنوان بعدد الموظفين */
   document.getElementById('modalTitle').textContent=entityName+' — قائمة الموظفين ('+total+')';
@@ -579,8 +480,8 @@ function filterModal(filter,btn){
 
 function renderEmpTable(data,filter){
   let rows=data;
-  if(filter==='matched')rows=data.filter(r=>r.status==='مطابق');
-  else if(filter==='issues')rows=data.filter(r=>r.status!=='مطابق');
+  if(filter==='matched')rows=data.filter(r=>isMatchedStatus(r.status));
+  else if(filter==='issues')rows=data.filter(r=>!isMatchedStatus(r.status));
   else if(filter==='gosi')rows=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط');
   else if(filter==='qiwa')rows=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط');
 
@@ -603,7 +504,7 @@ function renderEmpTable(data,filter){
       </thead>
       <tbody>
         ${rows.map((r,i)=>{
-          const sc=r.status==='مطابق'?'st-ok':r.gosi==='نشط'&&r.qiwa!=='نشط'?'st-amber':'st-warn';
+          const sc=isMatchedStatus(r.status)?'st-ok':r.gosi==='نشط'&&r.qiwa!=='نشط'?'st-amber':'st-warn';
           const gosiC=r.gosi==='نشط'?'var(--teal)':'var(--t3)';
           const qiwaC=r.qiwa==='نشط'?'var(--teal)':'var(--t3)';
           return `<tr>
@@ -743,6 +644,17 @@ async function fetchIqamaRaw(){
       expiry:(r[4]||'').trim()
     }));
   }catch(e){return null;}
+}
+
+async function refreshIqamaLiveTiles(d){
+  const raw=await fetchIqamaRaw();
+  const el30=document.getElementById('kIqL30'),el60=document.getElementById('kIqL60');
+  if(!el30||!el60)return;
+  if(raw===null){el30.textContent='—';el60.textContent='—';return;}
+  const filtered=(d&&d.length===1)?raw.filter(r=>r.co===d[0].id):raw;
+  const withDays=filtered.map(r=>calcDays(r.expiry));
+  el30.textContent=withDays.filter(x=>x<=30).length;
+  el60.textContent=withDays.filter(x=>x>30&&x<=60).length;
 }
 
 async function openIqamaModal(){
@@ -1230,45 +1142,43 @@ const TT={backgroundColor:'rgba(5,8,15,.97)',borderColor:'rgba(45,212,191,.22)',
 
 function onCo(){cur=$('coSel').value;renderAll();$('pg').scrollTo({top:0,behavior:'smooth'});}
 
-function openKpiModal(type){
+async function openKpiModal(type){
   const d=gD();
   if(d.length===1){
     /* شركة واحدة محددة */
     const c=d[0];
-    if(EMP_DATA[c.id]){
-      openEmpModal(c.id,c.name);
-    }else{
-      /* شركة ليس لها بيانات بعد */
-      document.getElementById('modalTitle').textContent=c.name+' — قائمة الموظفين';
-      document.getElementById('modalSub').textContent='GOSI · Qiwa · مقارنة وتطابق';
-      document.getElementById('modalStats').innerHTML='';
-      document.getElementById('modalFilters').innerHTML='';
-      document.getElementById('modalBody').innerHTML=`<div style="text-align:center;padding:40px;color:var(--t3);font-size:13px">لم يتم إضافة بيانات تفصيلية لهذه الشركة بعد</div>`;
-      document.getElementById('modalOverlay').classList.add('open');
-    }
+    openEmpModal(c.id,c.name);
   }else{
     /* جميع الكيانات — اعرض قائمة اختيار */
     document.getElementById('modalTitle').textContent='اختر شركة لعرض التفاصيل';
     document.getElementById('modalSub').textContent='EMPLOYEE DETAILS';
     document.getElementById('modalStats').innerHTML='';
     document.getElementById('modalFilters').innerHTML='';
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2);font-family:var(--mono);font-size:11px">جاري تحميل البيانات...</div>';
+    document.getElementById('modalOverlay').classList.add('open');
+
+    const grouped=await loadAllEmpData();
+    if(grouped===null){
+      document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل البيانات — تأكد من رابط الشيت (EMPLOYEES_CSV_URL)</div>';
+      return;
+    }
+
     document.getElementById('modalBody').innerHTML=`
       <div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">
-        ${co.filter(c=>EMP_DATA[c.id]).map(c=>`
+        ${co.filter(c=>grouped[c.id]&&grouped[c.id].length).map(c=>`
           <div onclick="openEmpModal('${c.id}','${c.name}')" style="background:#1A2535;border:1px solid rgba(45,212,191,.12);border-radius:12px;padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(45,212,191,.35)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(45,212,191,.12)';this.style.transform='translateY(0)'" ">
             <span style="font-weight:600;color:var(--t1)">${c.name}</span>
             <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--teal)">${EMP_DATA[c.id].data.length}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t2);margin-right:4px">موظف</span>
+              <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--teal)">${grouped[c.id].length}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t2);margin-right:4px">موظف</span>
               <span style="font-family:var(--mono);font-size:10px;color:var(--teal)">عرض ←</span>
             </div>
           </div>`).join('')}
-        ${co.filter(c=>!EMP_DATA[c.id]).map(c=>`
+        ${co.filter(c=>!(grouped[c.id]&&grouped[c.id].length)).map(c=>`
           <div style="background:rgba(18,28,54,.3);border:1px solid var(--b0);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;opacity:.5">
             <span style="font-weight:600;color:var(--t2)">${c.name}</span>
             <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">لا توجد بيانات بعد</span>
           </div>`).join('')}
       </div>`;
-    document.getElementById('modalOverlay').classList.add('open');
   }
 }
 
@@ -1405,12 +1315,16 @@ function rWP(d){
 }
 
 function rMuqeem(d){
-  const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),l3=ns(d,'iqLt30'),l6=ns(d,'iqLt60'),x=ns(d,'exitReEntry');
-  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)'],[l3,'تنتهي <30','EXP <30D',l3>0,'var(--amber)'],[l6,'تنتهي <60','EXP <60D',l6>0,'var(--amber)'],[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
+  const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),x=ns(d,'exitReEntry');
+  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
+    +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL30">—</div><div class="ar">تنتهي &lt;30</div><div class="en">EXP &lt;30D</div></div>`
+    +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL60">—</div><div class="ar">تنتهي &lt;60</div><div class="en">EXP &lt;60D</div></div>`
+    +[[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
     +`<div class="iqcard" style="cursor:pointer" onclick="openVisaModal()" title="اضغط لعرض التأشيرات الصادرة"><div class="n" style="color:var(--purple)" id="kVisaTile">—</div><div class="ar">التأشيرات</div><div class="en">VISAS</div></div>`
     +`<div class="iqcard" style="cursor:pointer" onclick="openRenewalModal()" title="اضغط لعرض تجديدات الإقامات"><div class="n" style="color:var(--green)" id="kRenewTile">—</div><div class="ar">تجديد الإقامات</div><div class="en">RENEWALS</div></div>`;
   refreshVisaTile(d);
   refreshRenewalTile(d);
+  refreshIqamaLiveTiles(d);
   $('mStats').innerHTML=`<div class="srow"><div class="lbl"><span class="ar">إجمالي الفعّالة</span><span class="en">TOTAL ACTIVE</span></div><div class="v" style="color:var(--teal)">${t}</div></div><div class="srow"><div class="lbl"><span class="ar">منتهية</span><span class="en">EXPIRED</span></div><div class="v" style="color:${e>0?'var(--red)':'var(--teal)'}">${e}</div></div><div class="srow"><div class="lbl"><span class="ar">خروج وعودة</span><span class="en">EXIT/RE-ENTRY</span></div><div class="v" style="color:${x>0?'var(--amber)':'var(--teal)'}">${x}</div></div>`;
   const ma=d.filter(c=>c.mudadStatus==='Active').length;
   const mc=d.filter(c=>c.mudadCompliance&&c.mudadCompliance!=='N/A');
