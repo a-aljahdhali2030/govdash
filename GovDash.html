@@ -554,7 +554,7 @@ async function openWPModal(entityId,entityName){
 
   let rows=WP_RAW;
   if(entityId&&entityId!=='all'){
-    rows=rows.filter(r=>r.co===entityId);
+    rows=rows.filter(r=>normCo(r.co)===normCo(entityId));
   }
   rows=rows.map(r=>({...r,days:wpDays(r.exp)}));
 
@@ -606,6 +606,7 @@ async function openWPModal(entityId,entityName){
 }
 /* حساب أيام رخص العمل تلقائياً */
 function wpDays(d){return calcDays(d.includes('-')?d:d.split('/').reverse().join('-'));}
+function normCo(s){return (s||'').toString().trim().toLowerCase().replace(/[\s_]+/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');}
 function parseSimpleCSV(text){
   const rows=[];let cur=[],cell='',inQ=false;
   for(let i=0;i<text.length;i++){
@@ -651,7 +652,7 @@ async function refreshIqamaLiveTiles(d){
   const el30=document.getElementById('kIqL30'),el60=document.getElementById('kIqL60');
   if(!el30||!el60)return;
   if(raw===null){el30.textContent='—';el60.textContent='—';return;}
-  const filtered=(d&&d.length===1)?raw.filter(r=>r.co===d[0].id):raw;
+  const filtered=(d&&d.length===1)?raw.filter(r=>normCo(r.co)===normCo(d[0].id)):raw;
   const withDays=filtered.map(r=>calcDays(r.expiry));
   el30.textContent=withDays.filter(x=>x<=30).length;
   el60.textContent=withDays.filter(x=>x>30&&x<=60).length;
@@ -675,7 +676,7 @@ async function openIqamaModal(){
   let filtered=IQAMA_RAW.map(r=>({...r,days:calcDays(r.expiry),sev:calcSev(calcDays(r.expiry))}));
   if(d.length===1){
     const nm=d[0].name;
-    filtered=filtered.filter(r=>r.co===nm);
+    filtered=filtered.filter(r=>normCo(r.co)===normCo(d[0].id));
   }
 
   const urgent=filtered.filter(r=>r.days<=7).length;
@@ -830,7 +831,7 @@ async function refreshVisaTile(d){
   const el=document.getElementById('kVisaTile');
   if(!el)return;
   if(data===null){el.textContent='—';return;}
-  const filtered=(d&&d.length===1)?data.filter(r=>r.co===d[0].id):data;
+  const filtered=(d&&d.length===1)?data.filter(r=>normCo(r.co)===normCo(d[0].id)):data;
   el.textContent=filtered.length;
 }
 
@@ -849,7 +850,7 @@ async function openVisaModal(){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل بيانات التأشيرات — تأكد من رابط الشيت (VISA_CSV_URL)</div>';
     return;
   }
-  VISA_RAW=single?raw.filter(r=>r.co===d[0].id):raw;
+  VISA_RAW=single?raw.filter(r=>normCo(r.co)===normCo(d[0].id)):raw;
 
   document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'التأشيرات الصادرة ('+VISA_RAW.length+')';
   document.getElementById('modalStats').innerHTML=`
@@ -900,7 +901,7 @@ async function refreshRenewalTile(d){
   const el=document.getElementById('kRenewTile');
   if(!el)return;
   if(data===null){el.textContent='—';return;}
-  const filtered=(d&&d.length===1)?data.filter(r=>r.co===d[0].id):data;
+  const filtered=(d&&d.length===1)?data.filter(r=>normCo(r.co)===normCo(d[0].id)):data;
   el.textContent=filtered.length;
 }
 
@@ -919,7 +920,7 @@ async function openRenewalModal(){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--red);font-size:12px">تعذّر تحميل بيانات التجديد — تأكد من رابط الشيت (RENEWAL_CSV_URL)</div>';
     return;
   }
-  RENEWAL_RAW=single?raw.filter(r=>r.co===d[0].id):raw;
+  RENEWAL_RAW=single?raw.filter(r=>normCo(r.co)===normCo(d[0].id)):raw;
 
   document.getElementById('modalTitle').textContent=(single?d[0].name+' — ':'')+'تجديد الإقامات ('+RENEWAL_RAW.length+')';
   document.getElementById('modalStats').innerHTML=`
