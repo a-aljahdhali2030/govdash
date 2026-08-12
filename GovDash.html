@@ -250,6 +250,11 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
   </div>
   <div class="tb-r">
     <div class="live-pill loading" id="livePill"><div class="live-dot"></div><span id="liveTxt">جاري الاتصال...</span></div>
+    <button class="sync-btn" id="dlBtn" onclick="openDownloadModal()" title="تنزيل بيانات">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>تنزيل
+    </button>
     <button class="sync-btn" id="syncBtn" onclick="fetchSheet()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -304,7 +309,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       <div class="kpi-lbl">عدد رخص العمل</div><div class="kpi-sub">WORK PERMITS TOTAL</div>
       <div class="kpi-val ca" id="kWP">—</div>
       <div class="kpi-rows">
-        <div class="krow"><span class="krow-l">إجمالي المُصدَرة</span><span class="krow-v ca" id="kWPi">—</span></div>
+        <div class="krow"><span class="krow-l">لإدارتك (MyDept)</span><span class="krow-v ca" id="kWPi">—</span></div>
         <div class="krow"><span class="krow-l">تنتهي قريباً</span><span class="krow-v cr" id="kWPe">—</span></div>
       </div>
       <div class="kpi-hint">← اضغط لعرض التفاصيل</div>
@@ -403,6 +408,58 @@ async function loadAllEmpData(force){
 let _modalFilter='all';
 
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalNow();}
+
+/* ══ تنزيل الصفحات ══ */
+const DOWNLOAD_PAGES=[
+  {label:'الموظفين — GOSI / Qiwa',en:'EMPLOYEES',url:()=>EMPLOYEES_CSV_URL,file:'Employees.csv'},
+  {label:'الإقامات المنتهية قريباً',en:'IQAMA',url:()=>IQAMA_CSV_URL,file:'Iqama.csv'},
+  {label:'رخص العمل',en:'WORK PERMITS',url:()=>WP_CSV_URL,file:'WorkPermits.csv'},
+  {label:'التأشيرات الصادرة',en:'VISAS',url:()=>VISA_CSV_URL,file:'Visas.csv'},
+  {label:'تجديد الإقامات',en:'RENEWALS',url:()=>RENEWAL_CSV_URL,file:'IqamaRenewals.csv'},
+];
+
+async function downloadCSV(url,filename,btn){
+  const originalText=btn?btn.textContent:'';
+  if(btn){btn.textContent='...جاري التنزيل';btn.disabled=true;}
+  try{
+    const res=await fetch(url+(url.includes('?')?'&':'?')+'t='+Date.now());
+    const text=await res.text();
+    const blob=new Blob(['\uFEFF'+text],{type:'text/csv;charset=utf-8;'});
+    const link=document.createElement('a');
+    link.href=URL.createObjectURL(blob);
+    link.download=filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }catch(e){
+    alert('تعذّر تنزيل الملف');
+  }
+  if(btn){btn.textContent=originalText;btn.disabled=false;}
+}
+
+function openDownloadModal(){
+  document.getElementById('modalTitle').textContent='تنزيل بيانات الداش';
+  document.getElementById('modalSub').textContent='DOWNLOAD · CSV';
+  document.getElementById('modalStats').innerHTML='';
+  document.getElementById('modalFilters').innerHTML='';
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">
+      ${DOWNLOAD_PAGES.map((p,i)=>`
+        <div style="background:#1A2535;border:1px solid rgba(45,212,191,.12);border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;color:var(--t1)">${p.label}</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:.5px;margin-top:2px">${p.en}</div>
+          </div>
+          <button class="sync-btn" id="dlpage_${i}" onclick="downloadCSV('${p.url().replace(/'/g,"\\'")}','${p.file}',this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>تنزيل
+          </button>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
 function closeModalNow(){document.getElementById('modalOverlay').classList.remove('open');}
 
 async function openEmpModal(entityId,entityName){
@@ -438,8 +495,8 @@ function parseEmpCSV(text){
   const data=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i];
-    if(!r[1]||!r[1].trim())continue;
-    data.push({co:(r[0]||'').trim(),name:r[1].trim(),id:r[2]||'—',gosi:(r[3]||'').trim(),qiwa:(r[4]||'').trim(),status:(r[5]||'').trim()});
+    if(!r[2]||!r[2].trim())continue;
+    data.push({co:(r[0]||'').trim(),dept:(r[1]||'').trim(),name:r[2].trim(),id:r[3]||'—',gosi:(r[4]||'').trim(),qiwa:(r[5]||'').trim(),contractType:(r[6]||'').trim(),contractStart:(r[7]||'').trim(),contractEnd:(r[8]||'').trim(),status:(r[9]||'').trim()});
   }
   return data;
 }
@@ -496,9 +553,13 @@ function renderEmpTable(data,filter){
         <tr>
           <th>#</th>
           <th>الاسم</th>
+          <th>القسم</th>
           <th>رقم الهوية</th>
           <th>GOSI</th>
           <th>Qiwa</th>
+          <th>نوع العقد</th>
+          <th>بداية العقد</th>
+          <th>نهاية العقد</th>
           <th>الحالة</th>
         </tr>
       </thead>
@@ -510,9 +571,13 @@ function renderEmpTable(data,filter){
           return `<tr>
             <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
             <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+            <td style="font-size:11px;color:var(--t2)">${r.dept||'—'}</td>
             <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.id}</td>
             <td style="text-align:center"><span style="font-family:var(--mono);font-size:10px;color:${gosiC}">${r.gosi||'—'}</span></td>
             <td style="text-align:center"><span style="font-family:var(--mono);font-size:10px;color:${qiwaC}">${r.qiwa||'—'}</span></td>
+            <td style="font-size:11px;color:var(--t2)">${r.contractType||'—'}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.contractStart||'—'}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.contractEnd||'—'}</td>
             <td><span class="${sc}">${r.status||'—'}</span></td>
           </tr>`;
         }).join('')}
@@ -533,9 +598,20 @@ async function fetchWPRaw(){
       co:(r[0]||'').trim(),
       name:(r[1]||'').trim(),
       id:(r[2]||'').trim(),
-      exp:(r[3]||'').trim()
+      exp:(r[3]||'').trim(),
+      myDept:(r[4]||'').trim().toLowerCase()==='yes'
     }));
   }catch(e){return null;}
+}
+
+async function refreshMyDeptCount(d){
+  const raw=await fetchWPRaw();
+  const el=document.getElementById('kWPi');
+  if(!el)return;
+  if(raw===null){el.textContent='—';return;}
+  let rows=raw.filter(r=>r.myDept);
+  if(d&&d.length===1)rows=rows.filter(r=>normCo(r.co)===normCo(d[0].id));
+  el.textContent=rows.length;
 }
 
 async function openWPModal(entityId,entityName){
@@ -1257,7 +1333,8 @@ function rKPI(d){
   set('kAtt',ns(d,'attested'));set('kUn',ns(d,'unattested'));set('kDiff',ns(d,'diff'));
   set('kIq',ns(d,'activeIqamas'));set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
   const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
-  set('kWP',wpi);set('kWPi',wpi);set('kWPe',wpa+wpe);
+  set('kWP',wpi);set('kWPi','—');set('kWPe',wpa+wpe);
+  refreshMyDeptCount(d);
   const act=d.filter(c=>c.qiwaStatus==='Active').length;
   set('kAct',act+'/'+d.length);set('kIn',d.length-act);
 }
@@ -1293,16 +1370,27 @@ function rQiwa(d){
   else{$('nitaqatSection').innerHTML='';}
 }
 
-function rWP(d){
+async function rWP(d){
   if(wpCh){wpCh.destroy();wpCh=null;}
   const canvas=$('wpChart');if(!canvas)return;
   const labels=d.map(c=>c.name);
   const issued=d.map(c=>pN(c.permitIssuance));
   const action=d.map(c=>pN(c.wpAction));
-  const expiring=d.map(c=>pN(c.expLt30));
-  const expLt60=d.map(c=>pN(c.expLt60));
-  const expGt90=d.map(c=>pN(c.expGt90));
-  const expired=d.map(c=>pN(c.expired));
+
+  const wpRaw=await fetchWPRaw();
+  let expiring,expLt60,expGt90,expired;
+  if(wpRaw){
+    const dayLists=d.map(c=>wpRaw.filter(r=>normCo(r.co)===normCo(c.id)).map(r=>wpDays(r.exp)));
+    expiring=dayLists.map(arr=>arr.filter(x=>x>=0&&x<=30).length);
+    expLt60=dayLists.map(arr=>arr.filter(x=>x>30&&x<=60).length);
+    expGt90=dayLists.map(arr=>arr.filter(x=>x>60&&x<=90).length);
+    expired=dayLists.map(arr=>arr.filter(x=>x<0).length);
+  }else{
+    expiring=d.map(c=>pN(c.expLt30));
+    expLt60=d.map(c=>pN(c.expLt60));
+    expGt90=d.map(c=>pN(c.expGt90));
+    expired=d.map(c=>pN(c.expired));
+  }
   wpCh=new Chart(canvas,{type:'bar',data:{labels,datasets:[{label:'إجمالي الرخص',data:issued,backgroundColor:'rgba(45,212,191,.75)',borderRadius:4},{label:'تحتاج إجراء',data:action,backgroundColor:'rgba(248,113,113,.8)',borderRadius:4},{label:'تنتهي <30',data:expiring,backgroundColor:'rgba(251,191,36,.75)',borderRadius:4},{label:'تنتهي <60',data:expLt60,backgroundColor:'rgba(96,165,250,.7)',borderRadius:4},{label:'تنتهي >90',data:expGt90,backgroundColor:'rgba(167,139,250,.7)',borderRadius:4},{label:'منتهية',data:expired,backgroundColor:'rgba(239,68,68,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',rtl:true,labels:{boxWidth:10,boxHeight:10,padding:10,color:'#7fa8c8',font:{size:9}}},tooltip:{...TT,rtl:true}},scales:{x:{grid:{display:false},ticks:{color:'#6b92b8',font:{size:9},maxRotation:30}},y:{grid:{color:'rgba(45,212,191,.06)'},ticks:{color:'#2d4a6a',font:{size:9}},beginAtZero:true}}}});
   const sub=$('wpSubStats');
   if(sub)sub.innerHTML=[
