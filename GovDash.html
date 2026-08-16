@@ -696,11 +696,28 @@ function parseSimpleCSV(text){
   return rows;
 }
 
-/* دالة حساب الأيام تلقائياً من تاريخ اليوم */
+/* دالة حساب الأيام تلقائياً من تاريخ اليوم — تدعم YYYY-MM-DD وأيضاً صيغ Slash المحتملة (DD/MM/YYYY أو MM/DD/YYYY) وتختار التفسير الصحيح تلقائياً */
 function calcDays(dateStr){
   const today=new Date();today.setHours(0,0,0,0);
-  const parts=dateStr.includes('-')?dateStr.split('-'):[dateStr.split('/')[2],dateStr.split('/')[1],dateStr.split('/')[0]];
-  const exp=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  function mk(y,m,d){
+    if(m<1||m>12||d<1||d>31)return null;
+    const dt=new Date(y,m-1,d);
+    if(dt.getMonth()!==m-1)return null; // e.g. 31 Feb rolls over — reject
+    return dt;
+  }
+  let exp=null;
+  if(dateStr.includes('-')){
+    const p=dateStr.split('-').map(Number);
+    exp=mk(p[0],p[1],p[2]); // YYYY-MM-DD
+  }else if(dateStr.includes('/')){
+    const p=dateStr.split('/').map(Number);
+    const ddmm=mk(p[2],p[1],p[0]); // DD/MM/YYYY
+    const mmdd=mk(p[2],p[0],p[1]); // MM/DD/YYYY
+    if(ddmm&&!mmdd)exp=ddmm;
+    else if(mmdd&&!ddmm)exp=mmdd;
+    else if(ddmm&&mmdd)exp=ddmm; // both valid (ambiguous) — default to DD/MM convention used across the sheet
+  }
+  if(!exp)return 9999;
   return Math.round((exp-today)/(1000*60*60*24));
 }
 function calcSev(days){return days<=7?'h':days<=30?'m':'l';}
@@ -770,28 +787,36 @@ async function openIqamaModal(){
   if(!filtered.length){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد إقامات تنتهي للشركة المختارة</div>';
   }else{
+    filtered.sort((a,b)=>a.days-b.days);
+    const g7=filtered.filter(r=>r.days<=7);
+    const g30=filtered.filter(r=>r.days>7&&r.days<=30);
+    const g90=filtered.filter(r=>r.days>30);
+
+    function rowsHtml(arr){
+      return arr.map((r,i)=>{
+        const clr=r.days<=7?'var(--red)':r.days<=30?'var(--amber)':'var(--blue)';
+        const badge=r.days<=7?'st-warn':r.days<=30?'st-amber':'';
+        const label=r.days<=7?'عاجل جداً':r.days<=30?'قريباً':'متابعة';
+        return `<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
+          <td style="font-weight:600;color:var(--t1)">${r.name}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
+          <td style="font-size:11px;color:var(--t2)">${r.nat}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:${clr}">${r.expiry}</td>
+          <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:${clr};text-align:center">${r.days}</td>
+          <td><span class="${badge}" style="${!badge?'font-family:var(--mono);font-size:8px;color:var(--blue)':''}">${label}</span></td>
+        </tr>`;
+      }).join('');
+    }
+    const head=`<thead><tr><th>#</th><th>الاسم</th><th>الشركة</th><th>الجنسية</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th></tr></thead>`;
+
     document.getElementById('modalBody').innerHTML=`
-      <table class="emp-table">
-        <thead><tr>
-          <th>#</th><th>الاسم</th><th>الشركة</th><th>الجنسية</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th>
-        </tr></thead>
-        <tbody>
-          ${filtered.map((r,i)=>{
-            const clr=r.days<=7?'var(--red)':r.days<=30?'var(--amber)':'var(--blue)';
-            const badge=r.days<=7?'st-warn':r.days<=30?'st-amber':'';
-            const label=r.days<=7?'عاجل جداً':r.days<=30?'قريباً':'متابعة';
-            return `<tr>
-              <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
-              <td style="font-weight:600;color:var(--t1)">${r.name}</td>
-              <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
-              <td style="font-size:11px;color:var(--t2)">${r.nat}</td>
-              <td style="font-family:var(--mono);font-size:11px;color:${clr}">${r.expiry}</td>
-              <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:${clr};text-align:center">${r.days}</td>
-              <td><span class="${badge}" style="${!badge?'font-family:var(--mono);font-size:8px;color:var(--blue)':''}">${label}</span></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
+      ${g7.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--red);letter-spacing:.8px;margin:8px 0 6px">🔴 خلال 7 أيام (${g7.length})</div>
+      <table class="emp-table" style="margin-bottom:16px">${head}<tbody>${rowsHtml(g7)}</tbody></table>`:''}
+      ${g30.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--amber);letter-spacing:.8px;margin:8px 0 6px">🟡 خلال 30 يوم (${g30.length})</div>
+      <table class="emp-table" style="margin-bottom:16px">${head}<tbody>${rowsHtml(g30)}</tbody></table>`:''}
+      ${g90.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--blue);letter-spacing:.8px;margin:8px 0 6px">🔵 بعد 30 يوم (${g90.length})</div>
+      <table class="emp-table">${head}<tbody>${rowsHtml(g90)}</tbody></table>`:''}
       <div style="margin-top:12px;padding:10px 14px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:11px;color:var(--t2)">
         ⚠ يرجى مراجعة وتجديد الإقامات قبل انتهائها لتجنب المخالفات
       </div>`;
