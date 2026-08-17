@@ -801,6 +801,7 @@ async function openIqamaModal(){
           <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
           <td style="font-weight:600;color:var(--t1)">${r.name}</td>
           <td style="font-family:var(--mono);font-size:10px;color:var(--blue)">${r.co}</td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--t2)">${r.id}</td>
           <td style="font-size:11px;color:var(--t2)">${r.nat}</td>
           <td style="font-family:var(--mono);font-size:11px;color:${clr}">${r.expiry}</td>
           <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:${clr};text-align:center">${r.days}</td>
@@ -808,7 +809,7 @@ async function openIqamaModal(){
         </tr>`;
       }).join('');
     }
-    const head=`<thead><tr><th>#</th><th>الاسم</th><th>الشركة</th><th>الجنسية</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th></tr></thead>`;
+    const head=`<thead><tr><th>#</th><th>الاسم</th><th>الشركة</th><th>رقم الإقامة</th><th>الجنسية</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th></tr></thead>`;
 
     document.getElementById('modalBody').innerHTML=`
       ${g7.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--red);letter-spacing:.8px;margin:8px 0 6px">🔴 خلال 7 أيام (${g7.length})</div>
