@@ -354,16 +354,7 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
   <div class="sec"><div class="sec-txt"><div class="ar">الأنشطة التجارية للكيانات <span id="actvCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">COMMERCIAL ACTIVITIES · CR REGISTRY</div></div><div class="sec-line"></div></div>
-  <div class="panel">
-    <div class="ph">
-      <div><div class="ar">سجل الأنشطة التجارية</div><div class="en">CR / 700 REGISTRY DETAIL</div></div>
-      <div class="co-wrap" id="actvSelWrap" style="display:none">
-        <select class="co-sel" id="actvSel" onchange="onActvSel()" style="min-width:230px;font-size:11.5px"></select>
-        <span class="co-arr">&#9662;</span>
-      </div>
-    </div>
-    <div id="actvCard"></div>
-  </div>
+  <div id="actvGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px"></div>
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -1070,79 +1061,72 @@ async function fetchActivitiesRaw(){
     const res=await fetch(ACTIVITIES_CSV_URL+(ACTIVITIES_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
     const text=await res.text();
     const rows=parseSimpleCSV(text);
-    /* الأعمدة المتوقعة: A=اسم الشركة B=رقم السجل التجاري C=رقم 700 D=التاريخ E=النشاط F(اختياري)=توافق مندوب مبيعات */
+    /* الأعمدة الفعلية في الشيت: A=الكود/المعرف B=اسم الشركة الكامل C=رقم السجل التجاري D=رقم 700 E=التاريخ F=النشاط G(اختياري)=توافق مندوب مبيعات */
     return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({
       co:      (r[0]||'').trim(),
-      cr:      (r[1]||'').trim(),
-      nat700:  (r[2]||'').trim(),
-      date:    (r[3]||'').trim(),
-      activity:(r[4]||'').trim(),
-      salesFit:(r[5]||'').trim()
+      fullName:(r[1]||'').trim(),
+      cr:      (r[2]||'').trim(),
+      nat700:  (r[3]||'').trim(),
+      date:    (r[4]||'').trim(),
+      activity:(r[5]||'').trim(),
+      salesFit:(r[6]||'').trim()
     }));
   }catch(e){return null;}
 }
-function renderActivityCard(r){
-  const activities=(r.activity||'').split(/\s-\s|\n/).map(s=>s.trim()).filter(Boolean);
-  const fitBadge=r.salesFit?`<span class="badge ${r.salesFit.trim()==='لا'?'bb':'bt'}" style="white-space:nowrap;font-size:10px;padding:4px 10px">مندوب مبيعات: ${r.salesFit}</span>`:'';
-  return `<div style="display:flex;flex-direction:column;gap:14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--teal)">${r.co||'—'}</div>
-      ${fitBadge}
-    </div>
-    <div class="mc4" style="grid-template-columns:repeat(3,1fr)">
-      <div class="mcard"><div class="lbl">رقم السجل التجاري</div><div class="val" style="font-size:15px;direction:ltr">${r.cr||'—'}</div></div>
-      <div class="mcard"><div class="lbl">الرقم الموحد (700)</div><div class="val" style="font-size:15px;direction:ltr">${r.nat700||'—'}</div></div>
-      <div class="mcard"><div class="lbl">تاريخ الإصدار</div><div class="val" style="font-size:15px;direction:ltr">${r.date||'—'}</div></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-weight:600;letter-spacing:.3px">النشاط التجاري (${activities.length})</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${activities.length?activities.map(a=>`<div style="display:flex;gap:9px;align-items:flex-start;background:#1A2E42;border:1px solid var(--b0);border-radius:8px;padding:9px 13px">
-          <span style="color:var(--teal);flex-shrink:0;font-size:13px;line-height:1.6">•</span>
-          <span style="font-size:12.5px;color:var(--t1);line-height:1.75">${a}</span>
-        </div>`).join(''):'<div style="font-size:12px;color:var(--t3)">لا يوجد</div>'}
-      </div>
-    </div>
-  </div>`;
-}
-async function rActivities(d){
-  const sel=$('actvSel'),selWrap=$('actvSelWrap'),body=$('actvCard'),cnt=$('actvCnt');
-  if(!body)return;
-  ACTV_RAW=await fetchActivitiesRaw();
-  if(ACTV_RAW===null){
-    body.innerHTML='<div style="text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
-    if(cnt)cnt.textContent='';
-    if(selWrap)selWrap.style.display='none';
+function escAttr(s){return (s||'').replace(/"/g,'&quot;');}
+function openActivityModal(coVal){
+  const r=(ACTV_RAW||[]).find(x=>x.co===coVal);
+  document.getElementById('modalFilters').innerHTML='';
+  if(!r){
+    document.getElementById('modalTitle').textContent='—';
+    document.getElementById('modalSub').textContent='';
+    document.getElementById('modalStats').innerHTML='';
+    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">لا توجد بيانات</div>';
+    document.getElementById('modalOverlay').classList.add('open');
     return;
   }
-  if(cnt)cnt.textContent='('+ACTV_RAW.length+')';
-
-  if(d.length===1){
-    /* كيان محدد من القائمة العلوية — بطاقة واحدة مباشرة، بدون قائمة منسدلة محلية */
-    if(selWrap)selWrap.style.display='none';
-    const rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name));
-    if(!rows.length){
-      body.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
-      return;
-    }
-    body.innerHTML=rows.map(renderActivityCard).join('<div style="height:4px;border-top:1px solid var(--b0);margin:6px 0"></div>');
-  }else{
-    /* جميع الكيانات — قائمة منسدلة لاختيار شركة واحدة بدل ازدحام البطاقات */
-    if(selWrap)selWrap.style.display='';
-    if(sel){
-      const prev=sel.value;
-      sel.innerHTML=ACTV_RAW.map(r=>`<option value="${r.co}">${r.co}</option>`).join('');
-      if(ACTV_RAW.find(r=>r.co===prev))sel.value=prev;
-    }
-    const chosen=(sel&&sel.value)?ACTV_RAW.find(r=>r.co===sel.value):ACTV_RAW[0];
-    body.innerHTML=chosen?renderActivityCard(chosen):'<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد بيانات</div>';
-  }
+  document.getElementById('modalTitle').textContent=r.fullName||r.co;
+  document.getElementById('modalSub').textContent='السجل التجاري · الأنشطة · '+r.co;
+  document.getElementById('modalStats').innerHTML=`
+    <div class="mstat"><div class="n" style="color:var(--teal);font-size:15px;direction:ltr">${r.cr||'—'}</div><div class="l">رقم السجل التجاري</div></div>
+    <div class="mstat"><div class="n" style="color:var(--blue);font-size:15px;direction:ltr">${r.nat700||'—'}</div><div class="l">الرقم الموحد (700)</div></div>
+    <div class="mstat"><div class="n" style="color:var(--green);font-size:15px;direction:ltr">${r.date||'—'}</div><div class="l">تاريخ الإصدار</div></div>`;
+  const activities=(r.activity||'').split(/\s-\s|\n/).map(s=>s.trim()).filter(Boolean);
+  const fitLine=r.salesFit?`<div style="margin-bottom:14px;padding:11px 15px;border-radius:10px;background:${r.salesFit.trim()==='لا'?'rgba(56,189,248,.08)':'rgba(45,212,191,.08)'};border:1px solid ${r.salesFit.trim()==='لا'?'rgba(56,189,248,.22)':'rgba(45,212,191,.22)'};font-size:12.5px;color:var(--t1)"><b>مطابقة مندوب مبيعات:</b> ${r.salesFit}</div>`:'';
+  document.getElementById('modalBody').innerHTML=`
+    ${fitLine}
+    <div style="font-size:11px;color:var(--t2);margin-bottom:10px;font-weight:600;letter-spacing:.3px">النشاط التجاري (${activities.length})</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      ${activities.length?activities.map(a=>`<div style="display:flex;gap:11px;align-items:flex-start;background:#1A2535;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px 17px">
+        <span style="color:var(--teal);flex-shrink:0;font-size:17px;line-height:1.4">•</span>
+        <span style="font-size:15px;color:var(--t1);line-height:1.9;font-weight:500">${a}</span>
+      </div>`).join(''):'<div style="font-size:12px;color:var(--t3)">لا يوجد</div>'}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
 }
-function onActvSel(){
-  const sel=$('actvSel'),body=$('actvCard');
-  if(!ACTV_RAW||!sel||!body)return;
-  const chosen=ACTV_RAW.find(r=>r.co===sel.value);
-  body.innerHTML=chosen?renderActivityCard(chosen):'';
+async function rActivities(d){
+  const grid=$('actvGrid'),cnt=$('actvCnt');
+  if(!grid)return;
+  ACTV_RAW=await fetchActivitiesRaw();
+  if(ACTV_RAW===null){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
+    if(cnt)cnt.textContent='';
+    return;
+  }
+  let rows=ACTV_RAW;
+  if(d.length===1){
+    rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name));
+  }
+  if(cnt)cnt.textContent='('+rows.length+')';
+  if(!rows.length){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
+    return;
+  }
+  grid.innerHTML=rows.map(r=>`
+    <div class="plat" data-co="${escAttr(r.co)}" onclick="openActivityModal(this.dataset.co)" title="اضغط لعرض التفاصيل">
+      <div class="plat-head"><div class="plat-name" style="font-size:12.5px;color:var(--t1);font-family:var(--ar);font-weight:700;line-height:1.5">${r.fullName||r.co}</div></div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--teal);opacity:.55;letter-spacing:.4px">${r.co} · اضغط لعرض التفاصيل ←</div>
+    </div>`).join('');
 }
 
 /* ══ CONFIG ══ */
