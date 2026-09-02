@@ -353,6 +353,8 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div></div></div><div id="empSec"></div></div>
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">الأنشطة التجارية للكيانات <span id="actvCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">COMMERCIAL ACTIVITIES · CR REGISTRY</div></div><div class="sec-line"></div></div>
+  <div class="act-g" id="actvList"></div>
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -416,6 +418,7 @@ const DOWNLOAD_PAGES=[
   {label:'رخص العمل',en:'WORK PERMITS',url:()=>WP_CSV_URL,file:'WorkPermits.csv'},
   {label:'التأشيرات الصادرة',en:'VISAS',url:()=>VISA_CSV_URL,file:'Visas.csv'},
   {label:'تجديد الإقامات',en:'RENEWALS',url:()=>RENEWAL_CSV_URL,file:'IqamaRenewals.csv'},
+  {label:'الأنشطة التجارية — CR',en:'ACTIVITIES',url:()=>ACTIVITIES_CSV_URL,file:'Activities.csv'},
 ];
 
 async function downloadCSV(url,filename,btn){
@@ -1050,6 +1053,61 @@ async function openRenewalModal(){
     </table>`;
 }
 
+/* ══ الأنشطة التجارية (السجلات التجارية · CR · رقم 700) ══ */
+const ACTIVITIES_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=896161146&single=true&output=csv';
+let ACTV_RAW=null;
+async function fetchActivitiesRaw(){
+  try{
+    const res=await fetch(ACTIVITIES_CSV_URL+(ACTIVITIES_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
+    const text=await res.text();
+    const rows=parseSimpleCSV(text);
+    /* الأعمدة المتوقعة: A=اسم الشركة B=رقم السجل التجاري C=رقم 700 D=التاريخ E=النشاط F(اختياري)=توافق مندوب مبيعات */
+    return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({
+      co:      (r[0]||'').trim(),
+      cr:      (r[1]||'').trim(),
+      nat700:  (r[2]||'').trim(),
+      date:    (r[3]||'').trim(),
+      activity:(r[4]||'').trim(),
+      salesFit:(r[5]||'').trim()
+    }));
+  }catch(e){return null;}
+}
+async function rActivities(d){
+  const el=$('actvList'),cnt=$('actvCnt');
+  if(!el)return;
+  ACTV_RAW=await fetchActivitiesRaw();
+  if(ACTV_RAW===null){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
+    if(cnt)cnt.textContent='';
+    return;
+  }
+  let rows=ACTV_RAW;
+  if(d.length===1){
+    rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name)||normCo(r.co).includes(normCo(d[0].id))||normCo(d[0].id).includes(normCo(r.co)));
+  }
+  if(cnt)cnt.textContent='('+rows.length+')';
+  if(!rows.length){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
+    return;
+  }
+  el.innerHTML=rows.map(r=>{
+    const fitBadge=r.salesFit
+      ? (r.salesFit.trim()==='لا'
+          ? `<span class="asev l" style="white-space:nowrap">${r.salesFit}</span>`
+          : `<span class="asev m" style="white-space:nowrap">${r.salesFit}</span>`)
+      : '';
+    return `<div class="acard">
+      <div class="acard-hdr"><div class="acard-co">${r.co||'—'}</div>${fitBadge}</div>
+      <div class="acard-body" style="padding:11px 14px;display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>رقم السجل التجاري</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.cr||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>الرقم الموحد (700)</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.nat700||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>تاريخ الإصدار</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.date||'—'}</span></div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:2px;border-top:1px solid var(--b0);padding-top:7px">${r.activity||'—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 /* ══ CONFIG ══ */
 const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=1444680887&single=true&output=csv';
 const POLL_MS=60000;
@@ -1349,7 +1407,7 @@ function openPlatModal(platName,statusKey){
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);}
+function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);rActivities(d);}
 
 function rKPI(d){
   const emp=d.filter(c=>typeof c.gosi==='number').reduce((a,c)=>a+c.gosi,0);
