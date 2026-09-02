@@ -354,7 +354,16 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
   <div class="sec"><div class="sec-txt"><div class="ar">الأنشطة التجارية للكيانات <span id="actvCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">COMMERCIAL ACTIVITIES · CR REGISTRY</div></div><div class="sec-line"></div></div>
-  <div class="act-g" id="actvList"></div>
+  <div class="panel">
+    <div class="ph">
+      <div><div class="ar">سجل الأنشطة التجارية</div><div class="en">CR / 700 REGISTRY DETAIL</div></div>
+      <div class="co-wrap" id="actvSelWrap" style="display:none">
+        <select class="co-sel" id="actvSel" onchange="onActvSel()" style="min-width:230px;font-size:11.5px"></select>
+        <span class="co-arr">&#9662;</span>
+      </div>
+    </div>
+    <div id="actvCard"></div>
+  </div>
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -1072,40 +1081,68 @@ async function fetchActivitiesRaw(){
     }));
   }catch(e){return null;}
 }
+function renderActivityCard(r){
+  const activities=(r.activity||'').split(/\s-\s|\n/).map(s=>s.trim()).filter(Boolean);
+  const fitBadge=r.salesFit?`<span class="badge ${r.salesFit.trim()==='لا'?'bb':'bt'}" style="white-space:nowrap;font-size:10px;padding:4px 10px">مندوب مبيعات: ${r.salesFit}</span>`:'';
+  return `<div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--teal)">${r.co||'—'}</div>
+      ${fitBadge}
+    </div>
+    <div class="mc4" style="grid-template-columns:repeat(3,1fr)">
+      <div class="mcard"><div class="lbl">رقم السجل التجاري</div><div class="val" style="font-size:15px;direction:ltr">${r.cr||'—'}</div></div>
+      <div class="mcard"><div class="lbl">الرقم الموحد (700)</div><div class="val" style="font-size:15px;direction:ltr">${r.nat700||'—'}</div></div>
+      <div class="mcard"><div class="lbl">تاريخ الإصدار</div><div class="val" style="font-size:15px;direction:ltr">${r.date||'—'}</div></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-weight:600;letter-spacing:.3px">النشاط التجاري (${activities.length})</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${activities.length?activities.map(a=>`<div style="display:flex;gap:9px;align-items:flex-start;background:#1A2E42;border:1px solid var(--b0);border-radius:8px;padding:9px 13px">
+          <span style="color:var(--teal);flex-shrink:0;font-size:13px;line-height:1.6">•</span>
+          <span style="font-size:12.5px;color:var(--t1);line-height:1.75">${a}</span>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--t3)">لا يوجد</div>'}
+      </div>
+    </div>
+  </div>`;
+}
 async function rActivities(d){
-  const el=$('actvList'),cnt=$('actvCnt');
-  if(!el)return;
+  const sel=$('actvSel'),selWrap=$('actvSelWrap'),body=$('actvCard'),cnt=$('actvCnt');
+  if(!body)return;
   ACTV_RAW=await fetchActivitiesRaw();
   if(ACTV_RAW===null){
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
+    body.innerHTML='<div style="text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
     if(cnt)cnt.textContent='';
+    if(selWrap)selWrap.style.display='none';
     return;
   }
-  let rows=ACTV_RAW;
+  if(cnt)cnt.textContent='('+ACTV_RAW.length+')';
+
   if(d.length===1){
-    rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name)||normCo(r.co).includes(normCo(d[0].id))||normCo(d[0].id).includes(normCo(r.co)));
+    /* كيان محدد من القائمة العلوية — بطاقة واحدة مباشرة، بدون قائمة منسدلة محلية */
+    if(selWrap)selWrap.style.display='none';
+    const rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name));
+    if(!rows.length){
+      body.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
+      return;
+    }
+    body.innerHTML=rows.map(renderActivityCard).join('<div style="height:4px;border-top:1px solid var(--b0);margin:6px 0"></div>');
+  }else{
+    /* جميع الكيانات — قائمة منسدلة لاختيار شركة واحدة بدل ازدحام البطاقات */
+    if(selWrap)selWrap.style.display='';
+    if(sel){
+      const prev=sel.value;
+      sel.innerHTML=ACTV_RAW.map(r=>`<option value="${r.co}">${r.co}</option>`).join('');
+      if(ACTV_RAW.find(r=>r.co===prev))sel.value=prev;
+    }
+    const chosen=(sel&&sel.value)?ACTV_RAW.find(r=>r.co===sel.value):ACTV_RAW[0];
+    body.innerHTML=chosen?renderActivityCard(chosen):'<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد بيانات</div>';
   }
-  if(cnt)cnt.textContent='('+rows.length+')';
-  if(!rows.length){
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
-    return;
-  }
-  el.innerHTML=rows.map(r=>{
-    const fitBadge=r.salesFit
-      ? (r.salesFit.trim()==='لا'
-          ? `<span class="asev l" style="white-space:nowrap">${r.salesFit}</span>`
-          : `<span class="asev m" style="white-space:nowrap">${r.salesFit}</span>`)
-      : '';
-    return `<div class="acard">
-      <div class="acard-hdr"><div class="acard-co">${r.co||'—'}</div>${fitBadge}</div>
-      <div class="acard-body" style="padding:11px 14px;display:flex;flex-direction:column;gap:7px">
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>رقم السجل التجاري</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.cr||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>الرقم الموحد (700)</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.nat700||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2)"><span>تاريخ الإصدار</span><span style="font-family:var(--mono);color:var(--t1);direction:ltr">${r.date||'—'}</span></div>
-        <div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:2px;border-top:1px solid var(--b0);padding-top:7px">${r.activity||'—'}</div>
-      </div>
-    </div>`;
-  }).join('');
+}
+function onActvSel(){
+  const sel=$('actvSel'),body=$('actvCard');
+  if(!ACTV_RAW||!sel||!body)return;
+  const chosen=ACTV_RAW.find(r=>r.co===sel.value);
+  body.innerHTML=chosen?renderActivityCard(chosen):'';
 }
 
 /* ══ CONFIG ══ */
