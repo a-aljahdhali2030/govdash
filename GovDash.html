@@ -1117,6 +1117,12 @@ async function rActivities(d){
   if(d.length===1){
     rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name));
   }
+  /* نفس ترتيب القائمة العلوية "جميع الكيانات" */
+  const orderIdx=r=>{
+    const i=co.findIndex(e=>normCo(e.id)===normCo(r.co)||normCo(e.name)===normCo(r.co));
+    return i===-1?999:i;
+  };
+  rows=rows.slice().sort((a,b)=>orderIdx(a)-orderIdx(b));
   if(cnt)cnt.textContent='('+rows.length+')';
   if(!rows.length){
     grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
