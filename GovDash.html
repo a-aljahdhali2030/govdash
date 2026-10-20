@@ -353,8 +353,6 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div></div></div><div id="empSec"></div></div>
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
-  <div class="sec"><div class="sec-txt"><div class="ar">الأنشطة التجارية للكيانات <span id="actvCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">COMMERCIAL ACTIVITIES · CR REGISTRY</div></div><div class="sec-line"></div></div>
-  <div id="actvGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px"></div>
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -418,7 +416,6 @@ const DOWNLOAD_PAGES=[
   {label:'رخص العمل',en:'WORK PERMITS',url:()=>WP_CSV_URL,file:'WorkPermits.csv'},
   {label:'التأشيرات الصادرة',en:'VISAS',url:()=>VISA_CSV_URL,file:'Visas.csv'},
   {label:'تجديد الإقامات',en:'RENEWALS',url:()=>RENEWAL_CSV_URL,file:'IqamaRenewals.csv'},
-  {label:'الأنشطة التجارية — CR',en:'ACTIVITIES',url:()=>ACTIVITIES_CSV_URL,file:'Activities.csv'},
 ];
 
 async function downloadCSV(url,filename,btn){
@@ -829,11 +826,11 @@ async function openIqamaModal(){
 
 /* ══ بيانات فروقات قوى — GOSI بدون عقد ساري ══ */
 const QIWA_GAPS=[
-  {name:'MOHAMMED FAVAS USMAN',  co:'Daem-JED',  reason:'لا يوجد عقد ساري في أي فرع من فروع داعم',  sev:'h'},
-  {name:'KHALEEL MOHAMMED MAQSOOD AHMED', co:'Daem-JED', reason:'لا يوجد عقد ساري في أي فرع من فروع داعم', sev:'h'},
-  /* عقود مزدوجة نشطة — تم التحقق من التكرار عبر رقم الهوية بتاريخ 2026-08-05 */
+  {name:'ابراهيم عوض محمد محمد', co:'Daem-RUH', reason:'عقد قوى انتهى 2026-10-17 وما زال في التأمينات', sev:'h'},
+  {name:'تمام عبدالعزيز الدياب', co:'Daem-RUH', reason:'لا يوجد عقد ساري في قوى', sev:'h'},
+  /* عقود مزدوجة نشطة — تم التحقق من التكرار عبر رقم الهوية بتاريخ 2026-10-20 */
   {name:'علاء فيصل سعيد عبدات', co:'THG / Al-Mumayaza', reason:'عقد مزدوج ساري في شركتين — يلزم إنهاء عقد THG القديم (2020)', sev:'h'},
-  {name:'عمر محمد بن سعيد علي',  co:'TMSS / Modern Baggage', reason:'عقد مزدوج ساري في شركتين — تحديد الشركة الصحيحة وإنهاء الآخر', sev:'h'},
+  {name:'عمر محمد بن سعيد علي',  co:'TMSS / Modern Baggage', reason:'عقد مزدوج ساري في شركتين — التأمينات على الأمتعة، يلزم إنهاء عقد TMSS', sev:'h'},
   {name:'سامى بن محمد بن احمد المولد', co:'Daem-RUH / Daem-JED', reason:'نقل من جدة للرياض — عقد داعم جدة القديم لا يزال سارياً', sev:'m'},
   {name:'ابيه محمد الحسن الشريف',  co:'Daem-RUH / Daem-JED', reason:'نقل من جدة للرياض — عقد داعم جدة القديم لا يزال سارياً', sev:'m'},
 ];
@@ -1051,88 +1048,6 @@ async function openRenewalModal(){
         </tr>`).join('')}
       </tbody>
     </table>`;
-}
-
-/* ══ الأنشطة التجارية (السجلات التجارية · CR · رقم 700) ══ */
-const ACTIVITIES_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=896161146&single=true&output=csv';
-let ACTV_RAW=null;
-async function fetchActivitiesRaw(){
-  try{
-    const res=await fetch(ACTIVITIES_CSV_URL+(ACTIVITIES_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
-    const text=await res.text();
-    const rows=parseSimpleCSV(text);
-    /* الأعمدة الفعلية في الشيت: A=الكود/المعرف B=اسم الشركة الكامل C=رقم السجل التجاري D=رقم 700 E=التاريخ F=النشاط G(اختياري)=توافق مندوب مبيعات */
-    return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({
-      co:      (r[0]||'').trim(),
-      fullName:(r[1]||'').trim(),
-      cr:      (r[2]||'').trim(),
-      nat700:  (r[3]||'').trim(),
-      date:    (r[4]||'').trim(),
-      activity:(r[5]||'').trim(),
-      salesFit:(r[6]||'').trim()
-    }));
-  }catch(e){return null;}
-}
-function escAttr(s){return (s||'').replace(/"/g,'&quot;');}
-function openActivityModal(coVal){
-  const r=(ACTV_RAW||[]).find(x=>x.co===coVal);
-  document.getElementById('modalFilters').innerHTML='';
-  if(!r){
-    document.getElementById('modalTitle').textContent='—';
-    document.getElementById('modalSub').textContent='';
-    document.getElementById('modalStats').innerHTML='';
-    document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">لا توجد بيانات</div>';
-    document.getElementById('modalOverlay').classList.add('open');
-    return;
-  }
-  document.getElementById('modalTitle').textContent=r.fullName||r.co;
-  document.getElementById('modalSub').textContent='السجل التجاري · الأنشطة · '+r.co;
-  document.getElementById('modalStats').innerHTML=`
-    <div class="mstat"><div class="n" style="color:var(--teal);font-size:15px;direction:ltr">${r.cr||'—'}</div><div class="l">رقم السجل التجاري</div></div>
-    <div class="mstat"><div class="n" style="color:var(--blue);font-size:15px;direction:ltr">${r.nat700||'—'}</div><div class="l">الرقم الموحد (700)</div></div>
-    <div class="mstat"><div class="n" style="color:var(--green);font-size:15px;direction:ltr">${r.date||'—'}</div><div class="l">تاريخ الإصدار</div></div>`;
-  const activities=(r.activity||'').split(/\s-\s|\n/).map(s=>s.trim()).filter(Boolean);
-  const fitLine=r.salesFit?`<div style="margin-bottom:14px;padding:11px 15px;border-radius:10px;background:${r.salesFit.trim()==='لا'?'rgba(56,189,248,.08)':'rgba(45,212,191,.08)'};border:1px solid ${r.salesFit.trim()==='لا'?'rgba(56,189,248,.22)':'rgba(45,212,191,.22)'};font-size:12.5px;color:var(--t1)"><b>مطابقة مندوب مبيعات:</b> ${r.salesFit}</div>`:'';
-  document.getElementById('modalBody').innerHTML=`
-    ${fitLine}
-    <div style="font-size:11px;color:var(--t2);margin-bottom:10px;font-weight:600;letter-spacing:.3px">النشاط التجاري (${activities.length})</div>
-    <div style="display:flex;flex-direction:column;gap:9px">
-      ${activities.length?activities.map(a=>`<div style="display:flex;gap:11px;align-items:flex-start;background:#1A2535;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px 17px">
-        <span style="color:var(--teal);flex-shrink:0;font-size:17px;line-height:1.4">•</span>
-        <span style="font-size:15px;color:var(--t1);line-height:1.9;font-weight:500">${a}</span>
-      </div>`).join(''):'<div style="font-size:12px;color:var(--t3)">لا يوجد</div>'}
-    </div>`;
-  document.getElementById('modalOverlay').classList.add('open');
-}
-async function rActivities(d){
-  const grid=$('actvGrid'),cnt=$('actvCnt');
-  if(!grid)return;
-  ACTV_RAW=await fetchActivitiesRaw();
-  if(ACTV_RAW===null){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:12px">تعذّر تحميل بيانات الأنشطة التجارية — تأكد من رابط الشيت (ACTIVITIES_CSV_URL)</div>';
-    if(cnt)cnt.textContent='';
-    return;
-  }
-  let rows=ACTV_RAW;
-  if(d.length===1){
-    rows=ACTV_RAW.filter(r=>normCo(r.co)===normCo(d[0].id)||normCo(r.co)===normCo(d[0].name));
-  }
-  /* نفس ترتيب القائمة العلوية "جميع الكيانات" */
-  const orderIdx=r=>{
-    const i=co.findIndex(e=>normCo(e.id)===normCo(r.co)||normCo(e.name)===normCo(r.co));
-    return i===-1?999:i;
-  };
-  rows=rows.slice().sort((a,b)=>orderIdx(a)-orderIdx(b));
-  if(cnt)cnt.textContent='('+rows.length+')';
-  if(!rows.length){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات أنشطة تجارية لهذا الكيان بعد</div>';
-    return;
-  }
-  grid.innerHTML=rows.map(r=>`
-    <div class="plat" data-co="${escAttr(r.co)}" onclick="openActivityModal(this.dataset.co)" title="اضغط لعرض التفاصيل">
-      <div class="plat-head"><div class="plat-name" style="font-size:12.5px;color:var(--t1);font-family:var(--ar);font-weight:700;line-height:1.5">${r.fullName||r.co}</div></div>
-      <div style="font-family:var(--mono);font-size:8px;color:var(--teal);opacity:.55;letter-spacing:.4px">${r.co} · اضغط لعرض التفاصيل ←</div>
-    </div>`).join('');
 }
 
 /* ══ CONFIG ══ */
@@ -1434,7 +1349,7 @@ function openPlatModal(platName,statusKey){
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);rActivities(d);}
+function renderAll(){const d=gD();rKPI(d);rPlat(d);rQiwa(d);rWP(d);rMuqeem(d);rAnalytics(d);rAct(d);}
 
 function rKPI(d){
   const emp=d.filter(c=>typeof c.gosi==='number').reduce((a,c)=>a+c.gosi,0);
