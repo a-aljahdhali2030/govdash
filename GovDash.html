@@ -1275,7 +1275,7 @@ async function openKpiModal(type){
           <div onclick="openEmpModal('${c.id}','${c.name}')" style="background:#1A2535;border:1px solid rgba(45,212,191,.12);border-radius:12px;padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(45,212,191,.35)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(45,212,191,.12)';this.style.transform='translateY(0)'" ">
             <span style="font-weight:600;color:var(--t1)">${c.name}</span>
             <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--teal)">${grouped[c.id].length}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t2);margin-right:4px">موظف</span>
+              <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--teal)">${c.gosi||grouped[c.id].length}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t2);margin-right:4px">موظف</span>
               <span style="font-family:var(--mono);font-size:10px;color:var(--teal)">عرض ←</span>
             </div>
           </div>`).join('')}
