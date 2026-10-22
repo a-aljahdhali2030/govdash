@@ -828,7 +828,7 @@ async function openIqamaModal(){
 const QIWA_GAPS=[
   {name:'ابراهيم عوض محمد محمد', co:'Daem-RUH', reason:'عقد قوى انتهى 2026-10-17 وما زال في التأمينات', sev:'h'},
   {name:'تمام عبدالعزيز الدياب', co:'Daem-RUH', reason:'لا يوجد عقد ساري في قوى', sev:'h'},
-  /* عقود مزدوجة نشطة — تم التحقق من التكرار عبر رقم الهوية بتاريخ 2026-10-20 */
+  /* عقود مزدوجة نشطة — تم التحقق من التكرار عبر رقم الهوية بتاريخ 2026-10-22 */
   {name:'علاء فيصل سعيد عبدات', co:'THG / Al-Mumayaza', reason:'عقد مزدوج ساري في شركتين — يلزم إنهاء عقد THG القديم (2020)', sev:'h'},
   {name:'عمر محمد بن سعيد علي',  co:'TMSS / Modern Baggage', reason:'عقد مزدوج ساري في شركتين — التأمينات على الأمتعة، يلزم إنهاء عقد TMSS', sev:'h'},
   {name:'سامى بن محمد بن احمد المولد', co:'Daem-RUH / Daem-JED', reason:'نقل من جدة للرياض — عقد داعم جدة القديم لا يزال سارياً', sev:'m'},
@@ -853,12 +853,15 @@ function openQiwaModal(){
   }
 
   const total_issues=filtered_no.length+filtered_dbl.length;
+  /* عقود سارية في قوى لموظفين انتهت علاقتهم — عدد فقط (إجمالي النشط − الموثقة) */
+  const ended_cnt=d.reduce((a,c)=>a+Math.max(0,(+c.activeCont||0)-(+c.attested||0)),0);
   const urgent=QIWA_GAPS.filter(g=>g.sev==='h').length;
 
   document.getElementById('modalStats').innerHTML=`
     <div class="mstat"><div class="n" style="color:var(--red)">${filtered_no.length}</div><div class="l">بدون عقد ساري</div></div>
     <div class="mstat"><div class="n" style="color:var(--amber)">${filtered_dbl.length}</div><div class="l">عقود مزدوجة</div></div>
-    <div class="mstat"><div class="n" style="color:var(--t2)">${total_issues}</div><div class="l">إجمالي المشكلات</div></div>`;
+    <div class="mstat"><div class="n" style="color:var(--t2)">${total_issues}</div><div class="l">إجمالي المشكلات</div></div>
+    <div class="mstat"><div class="n" style="color:var(--blue)">${ended_cnt}</div><div class="l">عقود سارية لمنتهي العلاقة (عدد فقط)</div></div>`;
 
   document.getElementById('modalFilters').innerHTML='';
 
