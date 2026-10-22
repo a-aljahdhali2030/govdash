@@ -284,11 +284,11 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="kpi kpi-clickable" style="color:var(--blue)" onclick="openQiwaModal()" title="اضغط لعرض تفاصيل الفارق">
       <div class="kpi-acc" style="background:linear-gradient(90deg,#0369a1,var(--blue),transparent)"></div>
       <div class="kpi-glow" style="background:var(--blue)"></div>
-      <div class="kpi-lbl">العقود الموثّقة</div><div class="kpi-sub">ATTESTED CONTRACTS · QIWA</div>
+      <div class="kpi-lbl">إجمالي العقود السارية</div><div class="kpi-sub">ACTIVE CONTRACTS · QIWA</div>
       <div class="kpi-val cb" id="kAtt">—</div>
       <div class="kpi-rows">
-        <div class="krow"><span class="krow-l">غير موثّق</span><span class="krow-v cr" id="kUn">—</span></div>
-        <div class="krow"><span class="krow-l">الفارق GOSI/Qiwa</span><span class="krow-v ca" id="kDiff">—</span></div>
+        <div class="krow"><span class="krow-l">مطابق للتأمينات</span><span class="krow-v cg" id="kUn">—</span></div>
+        <div class="krow"><span class="krow-l">غير موجودين بالشركة</span><span class="krow-v ca" id="kDiff">—</span></div>
       </div>
       <div class="kpi-hint">← اضغط لعرض تفاصيل الفارق</div>
     </div>
@@ -861,7 +861,7 @@ function openQiwaModal(){
     <div class="mstat"><div class="n" style="color:var(--red)">${filtered_no.length}</div><div class="l">بدون عقد ساري</div></div>
     <div class="mstat"><div class="n" style="color:var(--amber)">${filtered_dbl.length}</div><div class="l">عقود مزدوجة</div></div>
     <div class="mstat"><div class="n" style="color:var(--t2)">${total_issues}</div><div class="l">إجمالي المشكلات</div></div>
-    <div class="mstat"><div class="n" style="color:var(--blue)">${ended_cnt}</div><div class="l">عقود سارية لمنتهي العلاقة (عدد فقط)</div></div>`;
+    <div class="mstat"><div class="n" style="color:var(--blue)">${ended_cnt}</div><div class="l">عقود سارية لموظفين غير موجودين بالشركة</div></div>`;
 
   document.getElementById('modalFilters').innerHTML='';
 
@@ -1359,7 +1359,7 @@ function rKPI(d){
   const s=d.filter(c=>typeof c.saudis==='number').reduce((a,c)=>a+c.saudis,0);
   const n=d.filter(c=>typeof c.nonSaudi==='number').reduce((a,c)=>a+c.nonSaudi,0);
   set('kEmp',emp||'—');set('kS',s);set('kN',n);
-  set('kAtt',ns(d,'attested'));set('kUn',ns(d,'unattested'));set('kDiff',ns(d,'diff'));
+  set('kAtt',ns(d,'activeCont'));set('kUn',ns(d,'attested'));set('kDiff',ns(d,'diff'));
   set('kIq',ns(d,'activeIqamas'));set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
   const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
   set('kWP',wpi);set('kWPi','—');set('kWPe',wpa+wpe);
