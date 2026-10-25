@@ -522,10 +522,25 @@ function renderModal(data,entityName){
   document.getElementById('modalFilters').innerHTML=`
     <button class="mf-btn active" onclick="filterModal('all',this)">الكل (${total})</button>
     <button class="mf-btn" onclick="filterModal('matched',this)">✓ مطابق (${matched})</button>
-    <button class="mf-btn" onclick="filterModal('issues',this)">⚠ يحتاج مراجعة (${issues})</button>`;
+    <button class="mf-btn" onclick="filterModal('issues',this)">⚠ يحتاج مراجعة (${issues})</button>
+    <button class="mf-btn" style="margin-right:auto" onclick="dlEmpCompany()">⬇ تنزيل Excel — ${entityName}</button>`;
+  window._empEntity=entityName;
 
   renderEmpTable(data,'all');
   window._empData=data;
+}
+
+
+function dlEmpCompany(){
+  const data=window._empData||[];
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[['Company','Department','Name','ID','InGOSI','InQiwa','ContractType','Contract Start Date','Contract End Date','Status']];
+  data.forEach(r=>rows.push([r.co,r.dept,r.name,r.id,r.gosi,r.qiwa,r.contractType,r.contractStart,r.contractEnd,r.status]));
+  const csv='\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='Employees_'+String(window._empEntity||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'.csv';
+  document.body.appendChild(a);a.click();a.remove();
 }
 
 function filterModal(filter,btn){
