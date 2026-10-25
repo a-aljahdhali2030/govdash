@@ -501,13 +501,14 @@ function parseEmpCSV(text){
   return data;
 }
 
+const isAct=v=>v==='نشط'||/^active$/i.test(String(v||'').trim());
 function isMatchedStatus(s){return s==='مطابق'||s==='Matched'||s==='matched';}
 function renderModal(data,entityName){
   _modalFilter='all';
   const total=data.length;
   const matched=data.filter(r=>isMatchedStatus(r.status)).length;
-  const gosiOnly=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط').length;
-  const qiwaOnly=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط').length;
+  const gosiOnly=data.filter(r=>isAct(r.gosi)&&!isAct(r.qiwa)).length;
+  const qiwaOnly=data.filter(r=>isAct(r.qiwa)&&!isAct(r.gosi)).length;
   const issues=data.filter(r=>!isMatchedStatus(r.status)).length;
 
   /* تحديث العنوان بعدد الموظفين */
@@ -554,8 +555,8 @@ function renderEmpTable(data,filter){
   let rows=data;
   if(filter==='matched')rows=data.filter(r=>isMatchedStatus(r.status));
   else if(filter==='issues')rows=data.filter(r=>!isMatchedStatus(r.status));
-  else if(filter==='gosi')rows=data.filter(r=>r.gosi==='نشط'&&r.qiwa!=='نشط');
-  else if(filter==='qiwa')rows=data.filter(r=>r.qiwa==='نشط'&&r.gosi!=='نشط');
+  else if(filter==='gosi')rows=data.filter(r=>isAct(r.gosi)&&!isAct(r.qiwa));
+  else if(filter==='qiwa')rows=data.filter(r=>isAct(r.qiwa)&&!isAct(r.gosi));
 
   if(!rows.length){
     document.getElementById('modalBody').innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد سجلات</div>';
@@ -580,9 +581,9 @@ function renderEmpTable(data,filter){
       </thead>
       <tbody>
         ${rows.map((r,i)=>{
-          const sc=isMatchedStatus(r.status)?'st-ok':r.gosi==='نشط'&&r.qiwa!=='نشط'?'st-amber':'st-warn';
-          const gosiC=r.gosi==='نشط'?'var(--teal)':'var(--t3)';
-          const qiwaC=r.qiwa==='نشط'?'var(--teal)':'var(--t3)';
+          const sc=isMatchedStatus(r.status)?'st-ok':isAct(r.gosi)&&!isAct(r.qiwa)?'st-amber':'st-warn';
+          const gosiC=isAct(r.gosi)?'var(--teal)':'var(--t3)';
+          const qiwaC=isAct(r.qiwa)?'var(--teal)':'var(--t3)';
           return `<tr>
             <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
             <td style="font-weight:600;color:var(--t1)">${r.name}</td>
