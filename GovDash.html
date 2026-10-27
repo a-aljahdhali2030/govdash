@@ -353,6 +353,8 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
     <div class="panel"><div class="ph"><div id="leftPH"><div class="ar">الموظفون حسب الكيان</div><div class="en">EMPLOYEES BY ENTITY</div></div></div><div id="empSec"></div></div>
     <div class="panel"><div class="ph"><div><div class="ar">توزيع الجنسيات</div><div class="en">NATIONALIZATION</div></div></div><div id="natWrap"></div></div>
   </div>
+  <div class="sec"><div class="sec-txt"><div class="ar">الأنشطة التجارية للكيانات</div><div class="en">COMMERCIAL ACTIVITIES · CR REGISTRY</div></div><div class="sec-line"></div></div>
+  <div class="panel" style="margin-bottom:14px"><div id="crWrap" style="overflow-x:auto"><div style="color:var(--t3);font-size:12px;padding:10px">جاري التحميل...</div></div></div>
   <div class="sec"><div class="sec-txt"><div class="ar">ملاحظات تتطلب إجراء <span id="actCnt" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div><div class="en">ACTION REQUIRED</div></div><div class="sec-line"></div></div>
   <div id="actContainer"></div>
 </div></div>
@@ -1209,6 +1211,29 @@ function applyData(data){
   if(co.find(c=>c.id===prev))sel.value=prev;else{sel.value='all';cur='all';}
   renderAll();
 }
+
+
+/* ══ COMMERCIAL ACTIVITIES (CR registry) ══ */
+const CR_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=896161146&single=true&output=csv';
+function dlCR(){
+  const rows=[['Company','CR Number','Unified 700','Issue Date','Activity','Notes'],...(window._crRows||[]).map(r=>[0,1,2,3,4,5].map(i=>(r[i]||'').trim()))];
+  const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Commercial_Activities.csv';a.click();
+}
+async function loadCR(){
+  const w=document.getElementById('crWrap');if(!w)return;
+  try{
+    const res=await fetch(CR_CSV_URL+'&t='+Date.now());
+    const rows=parseSimpleCSV(await res.text()).filter(r=>r[0]&&r[0].trim()&&/\d{5,}/.test(r[1]||''));
+    if(!rows.length){w.innerHTML='<div style="color:var(--t3);font-size:12px;padding:10px">لا توجد بيانات</div>';return;}
+    const esc=t=>String(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const hasNote=rows.some(r=>(r[5]||'').trim());
+    window._crRows=rows;
+    w.innerHTML='<div style="display:flex;justify-content:flex-end;padding:4px 4px 8px"><button class="sync-btn" onclick="dlCR()">⬇ تحميل Excel</button></div><table class="tbl" style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--t3);text-align:right"><th style="padding:8px">الكيان</th><th>رقم السجل التجاري</th><th>الرقم الموحد (700)</th><th>تاريخ الإصدار</th><th>النشاط</th>'+(hasNote?'<th>ملاحظات</th>':'')+'</tr></thead><tbody>'+
+      rows.map(r=>'<tr style="border-top:1px solid var(--b0)"><td style="padding:8px;font-weight:700;color:var(--teal)">'+esc(r[0])+'</td><td style="font-family:var(--mono)">'+esc(r[1])+'</td><td style="font-family:var(--mono)">'+esc(r[2])+'</td><td style="font-family:var(--mono)">'+esc(r[3])+'</td><td>'+esc(r[4])+'</td>'+(hasNote?'<td>'+esc(r[5])+'</td>':'')+'</tr>').join('')+'</tbody></table>';
+  }catch(e){w.innerHTML='<div style="color:var(--red);font-size:12px;padding:10px">تعذّر تحميل الأنشطة التجارية</div>';}
+}
+document.addEventListener('DOMContentLoaded',loadCR);
 
 document.addEventListener('DOMContentLoaded',()=>{
   fetchSheet();
