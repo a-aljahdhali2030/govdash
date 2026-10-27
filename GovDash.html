@@ -1216,16 +1216,21 @@ function applyData(data){
 
 /* ══ COMMERCIAL ACTIVITIES (CR registry) ══ */
 const CR_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=896161146&single=true&output=csv';
-function _crNorm(t){return String(t||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]/g,'');}
+function _crNorm(t){
+  let n=String(t||'').toLowerCase();
+  [[/riyadh|الرياض/g,'ruh'],[/jeddah|jedda|جدة/g,'jed'],[/khobar|khubar|الخبر/g,'khb'],[/mumayaza|mumayzah|mumayyaza|mumayiza|المميزة|المميزه/g,'mumayaza'],[/فرعي|فرع/g,'branch'],[/داعم/g,'daem'],[/تسهيل/g,'thg'],[/الامتعة|الأمتعة|modernbaggage|modern baggage|mbc/g,'modernbaggage']].forEach(([a,b])=>{n=n.replace(a,b);});
+  return n.replace(/[^a-z0-9؀-ۿ]/g,'');
+}
 function _crMatch(name){
   const n=_crNorm(name);if(!n)return null;
-  return (typeof co!=='undefined'?co:[]).find(c=>{const m=_crNorm(c.name),i=_crNorm(c.id);return m===n||i===n||(m&&(m.includes(n)||n.includes(m)));})||null;
+  const list=(typeof co!=='undefined'?co:[]);
+  return list.find(c=>_crNorm(c.name)===n||_crNorm(c.id)===n)||list.find(c=>{const m=_crNorm(c.name);return m&&(m.includes(n)||n.includes(m))&&!(m.includes('branch')!==n.includes('branch'));})||null;
 }
 function _crBuild(){
   return (window._crRaw||[]).map(r=>{
     const cells=r.map(x=>(x||'').trim());
-    const u700=cells.find(x=>/^700\d{5,}$/.test(x.replace(/\s/g,'')))||'';
-    const cr=cells.find((x,i)=>i>0&&/^\d{8,12}$/.test(x.replace(/\s/g,''))&&x!==u700)||'';
+    const u700=cells.find(x=>/^700\d{5,}$/.test(x.replace(/\D/g,'')))||'';
+    const cr=cells.find((x,i)=>i>0&&/^\d{8,12}$/.test(x.replace(/\D/g,''))&&x.replace(/\D/g,'').length>=8&&x.replace(/\D/g,'')!==u700.replace(/\D/g,'')&&!/^700/.test(x.replace(/\D/g,'')))||'';
     const m=_crMatch(cells[0]);
     return {name:cells[0],cr,u700,date:cells.find((x,i)=>i>0&&/^\d{4}-\d{2}-\d{2}$|^\d{1,2}\/\d{1,2}\/\d{4}$/.test(x))||'',act:cells[4]||'',
       scope:m?m.scope:'',rate:m?m.caRate:'',emp:m?m.gosi:'',sa:m?m.saudis:'',non:m?m.nonSaudi:''};
@@ -1252,7 +1257,8 @@ async function loadCR(){
   const w=document.getElementById('crWrap');if(!w)return;
   try{
     const res=await fetch(CR_CSV_URL+'&t='+Date.now());
-    const rows=parseSimpleCSV(await res.text()).filter(r=>r[0]&&r[0].trim()&&r.some(x=>/\d/.test(x||'')));
+    const all=parseSimpleCSV(await res.text());
+    const rows=all.filter((r,i)=>r[0]&&r[0].trim()&&!(i===0&&!r.some(x=>(x||'').replace(/\D/g,'').length>=8)));
     window._crRaw=rows;renderCR();
   }catch(e){w.innerHTML='<div style="color:var(--red);font-size:12px;padding:10px">تعذّر تحميل الأنشطة التجارية</div>';}
 }
