@@ -1230,14 +1230,20 @@ function _crBuild(){
   const hdr=(window._crHdr||[]).map(x=>String(x||'').toLowerCase());
   const col=re=>hdr.findIndex(h=>re.test(h));
   const iAct=col(/نشاط|انشط|أنشط|activit/),iDate=col(/إصدار|اصدار|تاريخ|issue|date/),iNote=col(/ملاحظ|note|مندوب|sales/);
+  const iU=col(/موحد|700|unified/),iCR=col(/سجل|\bcr\b|commercial reg|registration/);
   const isDate=x=>/^\d{4}-\d{1,2}-\d{1,2}$|^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(x);
+  const dg=x=>String(x||'').replace(/[٠-٩]/g,d=>d.charCodeAt(0)-1632).replace(/\D/g,'');
   return (window._crRaw||[]).map(r=>{
     const cells=r.map(x=>(x||'').trim());
-    const u700=cells.find(x=>/^700\d{5,}$/.test(x.replace(/\D/g,'')))||'';
-    const cr=cells.find((x,i)=>i>0&&x.replace(/\D/g,'').length>=8&&x.replace(/\D/g,'')!==u700.replace(/\D/g,'')&&!/^700/.test(x.replace(/\D/g,'')))||'';
+    let u700=iU>=0?(cells[iU]||''):'';
+    let cr=iCR>=0&&iCR!==iU?(cells[iCR]||''):'';
+    if(!u700)u700=cells.find((x,i)=>i>0&&i!==iCR&&/^7\d{9}$/.test(dg(x)))||'';
+    if(!cr)cr=cells.find((x,i)=>i>0&&x!==u700&&!isDate(x)&&dg(x).length>=8&&!/^7\d{9}$/.test(dg(x)))||'';
     const date=(iDate>=0&&isDate(cells[iDate]||'')?cells[iDate]:cells.find((x,i)=>i>0&&isDate(x)))||'';
     let act=iAct>=0?(cells[iAct]||''):'';
     if(!act||isDate(act))act=cells.find((x,i)=>i>0&&x.length>=3&&/[A-Za-z؀-ۿ]{3,}/.test(x)&&!isDate(x)&&x!==u700&&x!==cr&&i!==iNote)||'';
+    const lat=x=>String(x||'').replace(/[\u0660-\u0669]/g,d=>d.charCodeAt(0)-1632).replace(/[\u06F0-\u06F9]/g,d=>d.charCodeAt(0)-1776);
+    cr=lat(cr);u700=lat(u700);
     const m=_crMatch(cells[0]);
     return {name:cells[0],cr,u700,date,act,
       scope:m?m.scope:'',rate:m?m.caRate:'',emp:m?m.gosi:'',sa:m?m.saudis:'',non:m?m.nonSaudi:''};
@@ -1257,8 +1263,12 @@ function renderCR(){
   const esc=t=>String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const v=x=>(x===''||x==null||x==='N/A')?'—':esc(x);
   const rows=_crBuild();
-  w.innerHTML='<div style="display:flex;justify-content:flex-end;padding:4px 4px 8px"><button class="sync-btn" onclick="dlCR()">⬇ تحميل Excel</button></div><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--t3);text-align:right"><th style="padding:8px">الكيان</th><th>رقم السجل التجاري</th><th>الرقم الموحد (700)</th><th>النطاق</th><th>نسبة التوطين</th><th>الموظفون</th><th>سعودي</th><th>أجنبي</th><th>تاريخ الإصدار</th><th>النشاط</th></tr></thead><tbody>'+
-    rows.map(r=>'<tr style="border-top:1px solid var(--b0)"><td style="padding:8px;font-weight:700;color:var(--teal)">'+esc(r.name)+'</td><td style="font-family:var(--mono)">'+v(r.cr)+'</td><td style="font-family:var(--mono)">'+v(r.u700)+'</td><td>'+v(r.scope)+'</td><td style="font-family:var(--mono)">'+v(r.rate)+'</td><td style="font-family:var(--mono)">'+v(r.emp)+'</td><td style="font-family:var(--mono)">'+v(r.sa)+'</td><td style="font-family:var(--mono)">'+v(r.non)+'</td><td style="font-family:var(--mono)">'+v(r.date)+'</td><td>'+v(r.act)+'</td></tr>').join('')+'</tbody></table>';
+  const pct=x=>(x===''||x==null||x==='N/A')?'—':(/^[\d.]+$/.test(String(x))?x+'%':esc(x));
+  const th='style="padding:10px 6px;color:#e6f6ff;font-size:12px;font-weight:700;text-align:center;border-bottom:2px solid rgba(45,212,191,.45);white-space:nowrap"';
+  const td='style="padding:10px 6px;text-align:center;font-family:var(--mono);font-size:12.5px;color:var(--t1);vertical-align:middle"';
+  const tdt='style="padding:10px 6px;text-align:center;font-size:12.5px;color:var(--t1);vertical-align:middle"';
+  w.innerHTML='<div style="display:flex;justify-content:flex-end;padding:4px 4px 10px"><button class="sync-btn" onclick="dlCR()">⬇ تحميل Excel</button></div><table style="width:100%;min-width:1100px;table-layout:fixed;border-collapse:collapse"><colgroup><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:6%"><col style="width:6%"><col style="width:5%"><col style="width:5%"><col style="width:8%"><col style="width:35%"></colgroup><thead><tr><th '+th+'>الكيان</th><th '+th+'>رقم السجل التجاري</th><th '+th+'>الرقم الموحد (700)</th><th '+th+'>النطاق</th><th '+th+'>نسبة التوطين</th><th '+th+'>الموظفون</th><th '+th+'>سعودي</th><th '+th+'>أجنبي</th><th '+th+'>تاريخ الإصدار</th><th '+th+'>النشاط</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr style="border-bottom:1px solid var(--b0)"><td style="padding:10px 6px;text-align:center;font-weight:700;color:var(--teal);font-size:12.5px;vertical-align:middle">'+esc(r.name)+'</td><td '+td+'>'+v(r.cr)+'</td><td '+td+'>'+v(r.u700)+'</td><td '+tdt+'>'+v(r.scope)+'</td><td '+td+'>'+pct(r.rate)+'</td><td '+td+'>'+v(r.emp)+'</td><td '+td+'>'+v(r.sa)+'</td><td '+td+'>'+v(r.non)+'</td><td '+td+'>'+v(r.date)+'</td><td style="padding:10px 10px;text-align:right;font-size:12px;line-height:1.7;color:var(--t1);vertical-align:middle">'+v(r.act)+'</td></tr>').join('')+'</tbody></table>';
 }
 async function loadCR(){
   const w=document.getElementById('crWrap');if(!w)return;
