@@ -1210,27 +1210,50 @@ function applyData(data){
   co.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
   if(co.find(c=>c.id===prev))sel.value=prev;else{sel.value='all';cur='all';}
   renderAll();
+  try{renderCR();}catch(e){}
 }
 
 
 /* ══ COMMERCIAL ACTIVITIES (CR registry) ══ */
 const CR_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=896161146&single=true&output=csv';
+function _crNorm(t){return String(t||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]/g,'');}
+function _crMatch(name){
+  const n=_crNorm(name);if(!n)return null;
+  return (typeof co!=='undefined'?co:[]).find(c=>{const m=_crNorm(c.name),i=_crNorm(c.id);return m===n||i===n||(m&&(m.includes(n)||n.includes(m)));})||null;
+}
+function _crBuild(){
+  return (window._crRaw||[]).map(r=>{
+    const cells=r.map(x=>(x||'').trim());
+    const u700=cells.find(x=>/^700\d{5,}$/.test(x.replace(/\s/g,'')))||'';
+    const cr=cells.find((x,i)=>i>0&&/^\d{8,12}$/.test(x.replace(/\s/g,''))&&x!==u700)||'';
+    const m=_crMatch(cells[0]);
+    return {name:cells[0],cr,u700,date:cells.find((x,i)=>i>0&&/^\d{4}-\d{2}-\d{2}$|^\d{1,2}\/\d{1,2}\/\d{4}$/.test(x))||'',act:cells[4]||'',
+      scope:m?m.scope:'',rate:m?m.caRate:'',emp:m?m.gosi:'',sa:m?m.saudis:'',non:m?m.nonSaudi:''};
+  });
+}
 function dlCR(){
-  const rows=[['Company','CR Number','Unified 700','Issue Date','Activity','Notes'],...(window._crRows||[]).map(r=>[0,1,2,3,4,5].map(i=>(r[i]||'').trim()))];
-  const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Commercial_Activities.csv';a.click();
+  const f=v=>(v===undefined||v===null||v==='N/A')?'':v;
+  const rows=[['Company','CR Number','Unified 700','Scope (Nitaqat)','Saudization %','Total Employees','Saudi','Non-Saudi'],..._crBuild().map(r=>[r.name,r.cr,r.u700,f(r.scope),f(r.rate),f(r.emp),f(r.sa),f(r.non)])];
+  const csv='﻿'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Entities_CR_Saudization_Report.csv';a.click();
+}
+function renderCR(){
+  const w=document.getElementById('crWrap');if(!w)return;
+  const raw=window._crRaw;
+  if(raw==null){return;}
+  if(!raw.length){w.innerHTML='<div style="color:var(--t3);font-size:12px;padding:10px">لا توجد بيانات في تبويب الأنشطة التجارية</div>';return;}
+  const esc=t=>String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const v=x=>(x===''||x==null||x==='N/A')?'—':esc(x);
+  const rows=_crBuild();
+  w.innerHTML='<div style="display:flex;justify-content:flex-end;padding:4px 4px 8px"><button class="sync-btn" onclick="dlCR()">⬇ تحميل Excel</button></div><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--t3);text-align:right"><th style="padding:8px">الكيان</th><th>رقم السجل التجاري</th><th>الرقم الموحد (700)</th><th>النطاق</th><th>نسبة التوطين</th><th>الموظفون</th><th>سعودي</th><th>أجنبي</th><th>تاريخ الإصدار</th><th>النشاط</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr style="border-top:1px solid var(--b0)"><td style="padding:8px;font-weight:700;color:var(--teal)">'+esc(r.name)+'</td><td style="font-family:var(--mono)">'+v(r.cr)+'</td><td style="font-family:var(--mono)">'+v(r.u700)+'</td><td>'+v(r.scope)+'</td><td style="font-family:var(--mono)">'+v(r.rate)+'</td><td style="font-family:var(--mono)">'+v(r.emp)+'</td><td style="font-family:var(--mono)">'+v(r.sa)+'</td><td style="font-family:var(--mono)">'+v(r.non)+'</td><td style="font-family:var(--mono)">'+v(r.date)+'</td><td>'+v(r.act)+'</td></tr>').join('')+'</tbody></table>';
 }
 async function loadCR(){
   const w=document.getElementById('crWrap');if(!w)return;
   try{
     const res=await fetch(CR_CSV_URL+'&t='+Date.now());
-    const rows=parseSimpleCSV(await res.text()).filter(r=>r[0]&&r[0].trim()&&/\d{5,}/.test(r[1]||''));
-    if(!rows.length){w.innerHTML='<div style="color:var(--t3);font-size:12px;padding:10px">لا توجد بيانات</div>';return;}
-    const esc=t=>String(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    const hasNote=rows.some(r=>(r[5]||'').trim());
-    window._crRows=rows;
-    w.innerHTML='<div style="display:flex;justify-content:flex-end;padding:4px 4px 8px"><button class="sync-btn" onclick="dlCR()">⬇ تحميل Excel</button></div><table class="tbl" style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--t3);text-align:right"><th style="padding:8px">الكيان</th><th>رقم السجل التجاري</th><th>الرقم الموحد (700)</th><th>تاريخ الإصدار</th><th>النشاط</th>'+(hasNote?'<th>ملاحظات</th>':'')+'</tr></thead><tbody>'+
-      rows.map(r=>'<tr style="border-top:1px solid var(--b0)"><td style="padding:8px;font-weight:700;color:var(--teal)">'+esc(r[0])+'</td><td style="font-family:var(--mono)">'+esc(r[1])+'</td><td style="font-family:var(--mono)">'+esc(r[2])+'</td><td style="font-family:var(--mono)">'+esc(r[3])+'</td><td>'+esc(r[4])+'</td>'+(hasNote?'<td>'+esc(r[5])+'</td>':'')+'</tr>').join('')+'</tbody></table>';
+    const rows=parseSimpleCSV(await res.text()).filter(r=>r[0]&&r[0].trim()&&r.some(x=>/\d/.test(x||'')));
+    window._crRaw=rows;renderCR();
   }catch(e){w.innerHTML='<div style="color:var(--red);font-size:12px;padding:10px">تعذّر تحميل الأنشطة التجارية</div>';}
 }
 document.addEventListener('DOMContentLoaded',loadCR);
