@@ -751,6 +751,15 @@ function normIqDate(t){
     return m[3]+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
   return t;
 }
+/* قائمة الإقامات تُعرض لنفس الأشخاص الموجودين في تبويب رخص العمل (نطاق الإدارة) */
+async function scopeIqamaToWP(rows){
+  try{
+    const wp=await fetchWPRaw();
+    if(!wp||!wp.length)return rows;
+    const ids=new Set(wp.map(r=>String(r.id||'').replace(/\D/g,'')));
+    return rows.filter(r=>ids.has(String(r.id||'').replace(/\D/g,'')));
+  }catch(e){return rows;}
+}
 let IQAMA_RAW=null;
 
 async function fetchIqamaRaw(){
@@ -773,7 +782,8 @@ async function refreshIqamaLiveTiles(d){
   const el30=document.getElementById('kIqL30'),el60=document.getElementById('kIqL60');
   if(!el30||!el60)return;
   if(raw===null){el30.textContent='—';el60.textContent='—';return;}
-  const filtered=(d&&d.length===1)?raw.filter(r=>normCo(r.co)===normCo(d[0].id)):raw;
+  const scoped=await scopeIqamaToWP(raw);
+  const filtered=(d&&d.length===1)?scoped.filter(r=>normCo(r.co)===normCo(d[0].id)):scoped;
   const withDays=filtered.map(r=>calcDays(r.expiry));
   el30.textContent=withDays.filter(x=>x<=30).length;
   el60.textContent=withDays.filter(x=>x>30&&x<=60).length;
@@ -794,7 +804,8 @@ async function openIqamaModal(){
     return;
   }
 
-  let filtered=IQAMA_RAW.map(r=>({...r,days:calcDays(r.expiry),sev:calcSev(calcDays(r.expiry))}));
+  const IQ_SCOPED=await scopeIqamaToWP(IQAMA_RAW);
+  let filtered=IQ_SCOPED.map(r=>({...r,days:calcDays(r.expiry),sev:calcSev(calcDays(r.expiry))}));
   if(d.length===1){
     const nm=d[0].name;
     filtered=filtered.filter(r=>normCo(r.co)===normCo(d[0].id));
