@@ -230,8 +230,8 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 .emp-table tr:last-child td{border-bottom:none}
 .emp-table tr:hover td{background:rgba(45,212,191,.03)}
 .st-ok{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.22)}
-.st-warn{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.22)}
-.st-amber{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.22)}
+.st-warn{white-space:nowrap;display:inline-block;font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.22)}
+.st-amber{white-space:nowrap;display:inline-block;font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.22)}
 .kpi-clickable{cursor:pointer}
 .kpi-clickable:hover{border-color:rgba(45,212,191,.3)!important}
 .kpi-hint{font-family:var(--mono);font-size:8px;color:var(--teal);opacity:.45;margin-top:3px;letter-spacing:.2px;animation:hintFade 3s ease-in-out infinite}
@@ -741,6 +741,16 @@ function calcDays(dateStr){
 function calcSev(days){return days<=7?'h':days<=30?'m':'l';}
 
 const IQAMA_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=354730610&single=true&output=csv';
+/* تطبيع تاريخ الإقامة إلى YYYY-MM-DD — الشيت يصدّر M/D/YYYY (أمريكي)؛ إذا كان الجزء الأول > 12 فهو D/M/YYYY */
+function normIqDate(t){
+  t=String(t||'').trim();
+  let m=t.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  m=t.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m){let a=+m[1],b=+m[2];let mo=a,d=b;if(a>12&&b<=12){mo=b;d=a;}
+    return m[3]+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+  return t;
+}
 let IQAMA_RAW=null;
 
 async function fetchIqamaRaw(){
@@ -753,7 +763,7 @@ async function fetchIqamaRaw(){
       name:(r[1]||'').trim(),
       id:(r[2]||'').trim(),
       nat:(r[3]||'').trim(),
-      expiry:(r[4]||'').trim()
+      expiry:normIqDate((r[4]||'').trim())
     }));
   }catch(e){return null;}
 }
@@ -814,7 +824,7 @@ async function openIqamaModal(){
       return arr.map((r,i)=>{
         const clr=r.days<=7?'var(--red)':r.days<=30?'var(--amber)':'var(--blue)';
         const badge=r.days<=7?'st-warn':r.days<=30?'st-amber':'';
-        const label=r.days<=7?'عاجل جداً':r.days<=30?'قريباً':'متابعة';
+        const label=r.days<0?'منتهية':r.days<=7?'عاجل':r.days<=30?'قريباً':'متابعة';
         return `<tr>
           <td style="font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td>
           <td style="font-weight:600;color:var(--t1)">${r.name}</td>
