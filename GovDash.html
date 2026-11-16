@@ -1467,9 +1467,9 @@ function rKPI(d){
   const n=d.filter(c=>typeof c.nonSaudi==='number').reduce((a,c)=>a+c.nonSaudi,0);
   set('kEmp',emp||'—');set('kS',s);set('kN',n);
   set('kAtt',ns(d,'activeCont'));set('kUn',ns(d,'attested'));set('kDiff',ns(d,'diff'));
-  set('kIq',ns(d,'activeIqamas'));set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
+  set('kIq',n);set('kEiq',ns(d,'expiredIq'));set('kNiq',ns(d,'iqLt30'));
   const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
-  set('kWP',wpi);set('kWPi','—');set('kWPe',wpa+wpe);
+  set('kWP',n);set('kWPi','—');set('kWPe',wpa+wpe);
   refreshMyDeptCount(d);
   refreshPermitIqamaKPIs(d);
   const act=d.filter(c=>c.qiwaStatus==='Active').length;
@@ -1541,7 +1541,7 @@ async function rWP(d){
 }
 
 function rMuqeem(d){
-  const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),x=ns(d,'exitReEntry');
+  const t=d.filter(c=>typeof c.nonSaudi==='number').reduce((a,c)=>a+c.nonSaudi,0),e=ns(d,'expiredIq'),x=ns(d,'exitReEntry');
   $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" id="${en==='ACTIVE'?'kIqA':'kIqE'}" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
     +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL30">—</div><div class="ar">تنتهي &lt;30</div><div class="en">EXP &lt;30D</div></div>`
     +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL60">—</div><div class="ar">تنتهي &lt;60</div><div class="en">EXP &lt;60D</div></div>`
