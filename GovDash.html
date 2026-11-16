@@ -16,7 +16,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-size:13px;overflow:hidden;background:#0C1A2E}
-#bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.95}
 .tb{position:relative;z-index:10;height:56px;background:rgba(8,16,30,.95);border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between;padding:0 22px;backdrop-filter:blur(20px)}
 .tb-brand{display:flex;align-items:center;gap:11px}
 .tb-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--teal),#0891b2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;color:#06090f;box-shadow:0 0 16px rgba(45,212,191,.35)}
@@ -236,6 +236,29 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 .kpi-clickable:hover{border-color:rgba(45,212,191,.3)!important}
 .kpi-hint{font-family:var(--mono);font-size:8px;color:var(--teal);opacity:.45;margin-top:3px;letter-spacing:.2px;animation:hintFade 3s ease-in-out infinite}
 @keyframes hintFade{0%,100%{opacity:.45}50%{opacity:.9}}
+
+/* ══ تفاعل المربعات والصفوف (hover) ══ */
+.kpi,.panel,.plat,.acard,.mcard,.iqcard,.mstat,.ecard,.erow,.nat-leg-item,.mrow,.prow{transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease,border-color .22s ease,background .22s ease!important;will-change:transform}
+.kpi:hover{transform:translateY(-8px) scale(1.035)!important;border-color:color-mix(in srgb,currentColor 55%,transparent)!important;box-shadow:0 22px 48px rgba(0,0,0,.6),0 0 28px color-mix(in srgb,currentColor 35%,transparent),0 0 0 1px color-mix(in srgb,currentColor 40%,transparent)!important}
+.panel:hover,.plat:hover{transform:translateY(-4px);border-color:rgba(45,212,191,.38)!important;box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 22px rgba(45,212,191,.18)!important}
+.acard:hover{transform:translateY(-5px) scale(1.012)!important;border-color:rgba(56,189,248,.5)!important;box-shadow:0 18px 38px rgba(0,0,0,.55),0 0 22px rgba(56,189,248,.22)!important}
+.mcard:hover,.ecard:hover,.erow:hover,.iqcard:hover,.mstat:hover{transform:translateY(-5px) scale(1.06)!important;border-color:rgba(45,212,191,.6)!important;background:#22405c!important;box-shadow:0 12px 26px rgba(0,0,0,.5),0 0 18px rgba(45,212,191,.28)!important;cursor:default}
+.nat-leg-item{padding:6px 8px;border-radius:9px;border:1px solid transparent;cursor:pointer}
+.nat-leg-item:hover{transform:translateX(-5px) scale(1.04);background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.4)}
+.krow{padding:2px 4px;border-radius:6px;transition:background .15s,transform .15s}
+.krow:hover{background:rgba(255,255,255,.08);transform:translateX(-3px)}
+/* الصفوف: لون مغاير عند مرور الماوس */
+.aitem{transition:background .18s,transform .18s,box-shadow .18s;border-right:3px solid transparent}
+.aitem:hover{background:linear-gradient(270deg,rgba(56,189,248,.20),rgba(45,212,191,.07))!important;transform:translateX(-5px);border-right-color:var(--blue)}
+.aitem:has(.sev-d.h):hover{background:linear-gradient(270deg,rgba(248,113,113,.24),rgba(248,113,113,.06))!important;border-right-color:var(--red)}
+.aitem:has(.sev-d.m):hover{background:linear-gradient(270deg,rgba(251,191,36,.22),rgba(251,191,36,.06))!important;border-right-color:var(--amber)}
+.aitem:has(.sev-d.l):hover{background:linear-gradient(270deg,rgba(56,189,248,.22),rgba(56,189,248,.06))!important;border-right-color:var(--blue)}
+.emp-table tr,table tr{transition:background .15s}
+.emp-table tr:hover td,table tbody tr:hover td{background:rgba(56,189,248,.16)!important;box-shadow:inset 0 0 0 9999px rgba(45,212,191,.04)}
+.emp-table tr:hover td:first-child,table tbody tr:hover td:first-child{box-shadow:inset -3px 0 0 var(--teal)}
+.nat-donut-chart{cursor:pointer}
+.nat-donut-pct,.nat-donut-lbl{transition:all .2s}
+.nat-donut-center{pointer-events:none}
 </style>
 </head>
 <body>
@@ -377,11 +400,17 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
 </div>
 
 <script>
-/* PARTICLE BG */
-(()=>{const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');let W,H,pts=[];
+/* PARTICLE BG — خلفية متحركة أوضح + تتفاعل مع الماوس */
+(()=>{const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');let W,H,pts=[],mx=-999,my=-999,t=0;
 const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
-const init=()=>{pts=[];const n=Math.floor(W*H/22000);for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.3,a:Math.random()*.45+.08,hue:Math.random()>.55?174:198})};
-const draw=()=>{ctx.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);if(d<130){ctx.beginPath();ctx.strokeStyle=`rgba(45,212,191,${(1-d/130)*.05})`;ctx.lineWidth=.5;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke()}}pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},65%,68%,${p.a})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});requestAnimationFrame(draw)};
+const init=()=>{pts=[];const n=Math.min(170,Math.floor(W*H/11000));for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.55,vy:(Math.random()-.5)*.55,r:Math.random()*2.1+.7,a:Math.random()*.5+.4,hue:Math.random()>.55?174:198})};
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});addEventListener('mouseleave',()=>{mx=my=-999});
+const blobs=[[.2,.25,'45,212,191'],[.8,.35,'56,189,248'],[.5,.85,'139,92,246']];
+const draw=()=>{t+=.004;ctx.clearRect(0,0,W,H);
+ blobs.forEach((b,k)=>{const x=W*(b[0]+Math.sin(t*(1+k*.4)+k)*.12),y=H*(b[1]+Math.cos(t*(.8+k*.3)+k)*.12),r=Math.max(W,H)*.34;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${b[2]},.16)`);g.addColorStop(1,`rgba(${b[2]},0)`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H)});
+ for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);if(d<150){ctx.beginPath();ctx.strokeStyle=`rgba(45,212,191,${(1-d/150)*.32})`;ctx.lineWidth=.8;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke()}}
+  const dm=Math.hypot(pts[i].x-mx,pts[i].y-my);if(dm<190){ctx.beginPath();ctx.strokeStyle=`rgba(56,189,248,${(1-dm/190)*.7})`;ctx.lineWidth=1;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(mx,my);ctx.stroke();pts[i].x+=(mx-pts[i].x)*.006;pts[i].y+=(my-pts[i].y)*.006}}
+ pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},75%,70%,${p.a})`;ctx.shadowColor=`hsla(${p.hue},80%,65%,.8)`;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});requestAnimationFrame(draw)};
 addEventListener('resize',()=>{resize();init()});resize();init();draw();})();
 
 /* ══ بيانات الموظفين التفصيلية — تُحدَّث من الشيت ══ */
@@ -1582,8 +1611,29 @@ function rAnalytics(d){
   const ts=nd.reduce((a,c)=>a+c.saudis,0),tn=nd.reduce((a,c)=>a+c.nonSaudi,0),tot2=ts+tn||1;
   const ps2=Math.round(ts/tot2*100);
   const _qa=av(d.map(c=>c.caRate));const qRate=(typeof _qa==='number'&&isFinite(_qa)&&d.some(c=>pN(c.caRate)>0))?_qa:ps2; /* نسبة التوطين من الشيت (قوى) — نفس القيمة في المقياس العلوي */
-  $('natWrap').innerHTML=`<div class="nat-donut-wrap"><div class="nat-donut-chart"><canvas id="donutChart"></canvas><div class="nat-donut-center"><div class="nat-donut-pct">${qRate}%</div><div class="nat-donut-lbl">توطين</div></div></div><div class="nat-legend"><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--teal)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">سعودي</div><div class="nat-leg-cnt ct">${ts.toLocaleString()}</div><div class="nat-leg-pct">${ps2}% من الإجمالي</div></div></div><div class="nat-leg-item"><div class="nat-leg-dot" style="background:var(--blue)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">غير سعودي</div><div class="nat-leg-cnt cb">${tn.toLocaleString()}</div><div class="nat-leg-pct">${100-ps2}% من الإجمالي</div></div></div><div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:4px"><div style="font-size:10px;color:var(--t2)">الإجمالي</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--t1)">${tot2.toLocaleString()}</div></div></div></div>`;
-  setTimeout(()=>{const canvas=document.getElementById('donutChart');if(!canvas)return;donutCh=new Chart(canvas,{type:'doughnut',data:{labels:['سعودي','غير سعودي'],datasets:[{data:[ts,tn],backgroundColor:['rgba(45,212,191,.85)','rgba(56,189,248,.75)'],borderColor:['rgba(45,212,191,.3)','rgba(56,189,248,.3)'],borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()} (${Math.round(ctx.raw/tot2*100)}%)`}}}}});},50);
+  $('natWrap').innerHTML=`<div class="nat-donut-wrap"><div class="nat-donut-chart"><canvas id="donutChart"></canvas><div class="nat-donut-center"><div class="nat-donut-pct">${qRate}%</div><div class="nat-donut-lbl">توطين</div></div></div><div class="nat-legend"><div class="nat-leg-item" onmouseenter="donutHover(0)" onmouseleave="donutHover(-1)"><div class="nat-leg-dot" style="background:var(--teal)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">سعودي</div><div class="nat-leg-cnt ct">${ts.toLocaleString()}</div><div class="nat-leg-pct">${ps2}% من الإجمالي</div></div></div><div class="nat-leg-item" onmouseenter="donutHover(1)" onmouseleave="donutHover(-1)"><div class="nat-leg-dot" style="background:var(--blue)"></div><div class="nat-leg-info"><div class="nat-leg-lbl">غير سعودي</div><div class="nat-leg-cnt cb">${tn.toLocaleString()}</div><div class="nat-leg-pct">${100-ps2}% من الإجمالي</div></div></div><div style="border-top:1px solid var(--b0);padding-top:10px;margin-top:4px"><div style="font-size:10px;color:var(--t2)">الإجمالي</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--t1)">${tot2.toLocaleString()}</div></div></div></div>`;
+  setTimeout(()=>{const canvas=document.getElementById('donutChart');if(!canvas)return;canvas.addEventListener('mouseleave',()=>donutShow(-1,true));donutCh=new Chart(canvas,{type:'doughnut',data:{labels:['سعودي','غير سعودي'],datasets:[{data:[ts,tn],backgroundColor:['rgba(45,212,191,.85)','rgba(56,189,248,.75)'],borderColor:['rgba(45,212,191,.3)','rgba(56,189,248,.3)'],borderWidth:2,hoverOffset:16,hoverBorderWidth:3}]},options:{responsive:true,maintainAspectRatio:true,cutout:'72%',animation:{duration:350},onHover:(e,els)=>{donutShow(els&&els.length?els[0].index:-1,true)},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()} (${Math.round(ctx.raw/tot2*100)}%)`}}}}});},50);
+}
+
+/* دائرة الجنسيات التفاعلية: عند مرور الماوس تتبرّز الشريحة ويتغيّر الرقم في الوسط */
+function donutShow(i,fromChart){
+  const pct=document.querySelector('.nat-donut-pct'),lbl=document.querySelector('.nat-donut-lbl');
+  if(!pct||!lbl)return;
+  if(!pct.dataset.base){pct.dataset.base=pct.textContent;lbl.dataset.base=lbl.textContent;}
+  if(i<0){pct.textContent=pct.dataset.base;lbl.textContent=lbl.dataset.base;pct.style.color='';return;}
+  const ds=donutCh&&donutCh.data.datasets[0].data,tot=ds.reduce((a,b)=>a+b,0)||1;
+  pct.textContent=Math.round(ds[i]/tot*100)+'%';
+  lbl.textContent=(i===0?'سعودي':'غير سعودي')+' · '+ds[i];
+  pct.style.color=i===0?'var(--teal)':'var(--blue)';
+}
+function donutHover(i){
+  if(!donutCh)return;
+  try{
+    if(i<0){donutCh.setActiveElements([]);donutCh.tooltip.setActiveElements([],{x:0,y:0});}
+    else{donutCh.setActiveElements([{datasetIndex:0,index:i}]);const m=donutCh.getDatasetMeta(0).data[i];donutCh.tooltip.setActiveElements([{datasetIndex:0,index:i}],{x:m.x,y:m.y});}
+    donutCh.update();
+  }catch(e){}
+  donutShow(i,false);
 }
 
 function rAct(d){
