@@ -632,7 +632,6 @@ async function refreshPermitIqamaKPIs(d){
   if(wp){
     let rows=one?wp.filter(r=>normCo(r.co)===normCo(one)):wp;
     const dy=rows.map(r=>wpDays(r.exp));
-    set('kWP',rows.length);
     set('kWPe',dy.filter(x=>x>=0&&x<=30).length);
     set('kWPx',dy.filter(x=>x<0).length);
     if(iq){
@@ -640,10 +639,8 @@ async function refreshPermitIqamaKPIs(d){
       let ir=iq.filter(r=>ids.has(String(r.id||'').replace(/\D/g,'')));
       if(one)ir=ir.filter(r=>normCo(r.co)===normCo(one));
       const di=ir.map(r=>calcDays(r.expiry));
-      set('kIq',di.filter(x=>x>=0).length);
       set('kEiq',di.filter(x=>x<0).length);
       set('kNiq',di.filter(x=>x>=0&&x<=30).length);
-      set('kIqA',di.filter(x=>x>=0).length);
       set('kIqE',di.filter(x=>x<0).length);
     }
   }
@@ -677,17 +674,20 @@ async function openWPModal(entityId,entityName){
   if(entityId&&entityId!=='all'){
     rows=rows.filter(r=>normCo(r.co)===normCo(entityId));
   }
-  rows=rows.map(r=>({...r,days:wpDays(r.exp)}));
+  rows=rows.map(r=>({...r,days:wpDays(r.exp)})).sort((a,b)=>a.days-b.days);
 
   const lt30=rows.filter(r=>r.days<=30);
   const lt60=rows.filter(r=>r.days>30&&r.days<=60);
   const lt90=rows.filter(r=>r.days>60&&r.days<=90);
+  const gt90=rows.filter(r=>r.days>90);
+  const exp0=rows.filter(r=>r.days<0);
 
   document.getElementById('modalStats').innerHTML=`
-    <div class="mstat"><div class="n" style="color:var(--red)">${rows.filter(r=>r.days<0).length}</div><div class="l">🔴 منتهية</div></div>
+    <div class="mstat"><div class="n" style="color:var(--red)">${exp0.length}</div><div class="l">🔴 منتهية</div></div>
     <div class="mstat"><div class="n" style="color:var(--red)">${rows.filter(r=>r.days>=0&&r.days<=30).length}</div><div class="l">🟠 تنتهي خلال 30 يوم</div></div>
     <div class="mstat"><div class="n" style="color:var(--amber)">${lt60.length}</div><div class="l">🟡 تنتهي خلال 60 يوم</div></div>
-    <div class="mstat"><div class="n" style="color:var(--blue)">${lt90.length}</div><div class="l">🔵 تنتهي خلال 90 يوم</div></div>`;
+    <div class="mstat"><div class="n" style="color:var(--blue)">${lt90.length}</div><div class="l">🔵 تنتهي خلال 90 يوم</div></div>
+    <div class="mstat"><div class="n" style="color:var(--t2)">${gt90.length}</div><div class="l">⚪ بعد 90 يوم</div></div>`;
 
   function tableRows(arr,clr){
     if(!arr.length)return '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:12px">لا يوجد</td></tr>';
@@ -723,7 +723,12 @@ async function openWPModal(entityId,entityName){
       ${tableHead()}
       <tbody>${tableRows(lt90,'var(--blue)')}</tbody>
     </table>`:''}
-    ${!lt30.length&&!lt60.length&&!lt90.length?'<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد رخص منتهية قريباً</div>':''}
+    ${gt90.length?`<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--t2);letter-spacing:.8px;margin:16px 0 6px">⚪ بعد 90 يوم (${gt90.length})</div>
+    <table class="emp-table">
+      ${tableHead()}
+      <tbody>${tableRows(gt90.sort((a,b)=>a.days-b.days),'var(--t2)')}</tbody>
+    </table>`:''}
+    ${!rows.length?'<div style="text-align:center;padding:30px;color:var(--teal);font-size:13px">✓ لا توجد رخص منتهية قريباً</div>':''}
   `;
 }
 /* حساب أيام رخص العمل تلقائياً */
