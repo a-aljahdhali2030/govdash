@@ -310,7 +310,8 @@ html,body{height:100%;color:var(--t1);font-family:var(--ar);direction:rtl;font-s
       <div class="kpi-val ca" id="kWP">—</div>
       <div class="kpi-rows">
         <div class="krow"><span class="krow-l">لإدارتك (MyDept)</span><span class="krow-v ca" id="kWPi">—</span></div>
-        <div class="krow"><span class="krow-l">تنتهي قريباً</span><span class="krow-v cr" id="kWPe">—</span></div>
+        <div class="krow"><span class="krow-l">منتهية</span><span class="krow-v cr" id="kWPx">—</span></div>
+        <div class="krow"><span class="krow-l">تنتهي &lt;30 يوم</span><span class="krow-v cr" id="kWPe">—</span></div>
       </div>
       <div class="kpi-hint">← اضغط لعرض التفاصيل</div>
     </div>
@@ -622,6 +623,32 @@ async function fetchWPRaw(){
   }catch(e){return null;}
 }
 
+/* توحيد أرقام الكروت العلوية (الإقامات + الرخص) مع القوائم: نفس المصدر (تبويبي الإقامات والرخص) ونفس النطاق ونفس التعريف
+   منتهية = أقل من 0 يوم | تنتهي قريباً = من 0 إلى 30 يوم */
+async function refreshPermitIqamaKPIs(d){
+  const [wp,iq]=await Promise.all([fetchWPRaw(),fetchIqamaRaw()]);
+  const one=(d&&d.length===1)?d[0].id:null;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  if(wp){
+    let rows=one?wp.filter(r=>normCo(r.co)===normCo(one)):wp;
+    const dy=rows.map(r=>wpDays(r.exp));
+    set('kWP',rows.length);
+    set('kWPe',dy.filter(x=>x>=0&&x<=30).length);
+    set('kWPx',dy.filter(x=>x<0).length);
+    if(iq){
+      const ids=new Set(wp.map(r=>String(r.id||'').replace(/\D/g,'')));
+      let ir=iq.filter(r=>ids.has(String(r.id||'').replace(/\D/g,'')));
+      if(one)ir=ir.filter(r=>normCo(r.co)===normCo(one));
+      const di=ir.map(r=>calcDays(r.expiry));
+      set('kIq',di.filter(x=>x>=0).length);
+      set('kEiq',di.filter(x=>x<0).length);
+      set('kNiq',di.filter(x=>x>=0&&x<=30).length);
+      set('kIqA',di.filter(x=>x>=0).length);
+      set('kIqE',di.filter(x=>x<0).length);
+    }
+  }
+}
+
 async function refreshMyDeptCount(d){
   const raw=await fetchWPRaw();
   const el=document.getElementById('kWPi');
@@ -657,7 +684,8 @@ async function openWPModal(entityId,entityName){
   const lt90=rows.filter(r=>r.days>60&&r.days<=90);
 
   document.getElementById('modalStats').innerHTML=`
-    <div class="mstat"><div class="n" style="color:var(--red)">${lt30.length}</div><div class="l">🔴 تنتهي خلال 30 يوم</div></div>
+    <div class="mstat"><div class="n" style="color:var(--red)">${rows.filter(r=>r.days<0).length}</div><div class="l">🔴 منتهية</div></div>
+    <div class="mstat"><div class="n" style="color:var(--red)">${rows.filter(r=>r.days>=0&&r.days<=30).length}</div><div class="l">🟠 تنتهي خلال 30 يوم</div></div>
     <div class="mstat"><div class="n" style="color:var(--amber)">${lt60.length}</div><div class="l">🟡 تنتهي خلال 60 يوم</div></div>
     <div class="mstat"><div class="n" style="color:var(--blue)">${lt90.length}</div><div class="l">🔵 تنتهي خلال 90 يوم</div></div>`;
 
@@ -785,7 +813,7 @@ async function refreshIqamaLiveTiles(d){
   const scoped=await scopeIqamaToWP(raw);
   const filtered=(d&&d.length===1)?scoped.filter(r=>normCo(r.co)===normCo(d[0].id)):scoped;
   const withDays=filtered.map(r=>calcDays(r.expiry));
-  el30.textContent=withDays.filter(x=>x<=30).length;
+  el30.textContent=withDays.filter(x=>x>=0&&x<=30).length;
   el60.textContent=withDays.filter(x=>x>30&&x<=60).length;
 }
 
@@ -811,16 +839,16 @@ async function openIqamaModal(){
     filtered=filtered.filter(r=>normCo(r.co)===normCo(d[0].id));
   }
 
-  const urgent=filtered.filter(r=>r.days<=7).length;
-  const soon=filtered.filter(r=>r.days>7&&r.days<=30).length;
+  const urgent=filtered.filter(r=>r.days<0).length;
+  const soon=filtered.filter(r=>r.days>=0&&r.days<=30).length;
   const later=filtered.filter(r=>r.days>30).length;
 
   document.getElementById('modalTitle').textContent='الإقامات المنتهية قريباً ('+filtered.length+')';
   document.getElementById('modalSub').textContent='MUQEEM · Iqama Expiry';
 
   document.getElementById('modalStats').innerHTML=`
-    <div class="mstat"><div class="n" style="color:var(--red)">${urgent}</div><div class="l">خلال 7 أيام 🔴</div></div>
-    <div class="mstat"><div class="n" style="color:var(--amber)">${soon}</div><div class="l">خلال 30 يوم 🟡</div></div>
+    <div class="mstat"><div class="n" style="color:var(--red)">${urgent}</div><div class="l">منتهية 🔴</div></div>
+    <div class="mstat"><div class="n" style="color:var(--amber)">${soon}</div><div class="l">تنتهي خلال 30 يوم 🟡</div></div>
     <div class="mstat"><div class="n" style="color:var(--blue)">${later}</div><div class="l">بعد 30 يوم 🔵</div></div>`;
 
   if(!filtered.length){
@@ -1438,6 +1466,7 @@ function rKPI(d){
   const wpi=ns(d,'permitIssuance'),wpa=ns(d,'wpAction'),wpe=ns(d,'expLt30');
   set('kWP',wpi);set('kWPi','—');set('kWPe',wpa+wpe);
   refreshMyDeptCount(d);
+  refreshPermitIqamaKPIs(d);
   const act=d.filter(c=>c.qiwaStatus==='Active').length;
   set('kAct',act+'/'+d.length);set('kIn',d.length-act);
 }
@@ -1508,7 +1537,7 @@ async function rWP(d){
 
 function rMuqeem(d){
   const t=ns(d,'activeIqamas'),e=ns(d,'expiredIq'),x=ns(d,'exitReEntry');
-  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
+  $('iqG').innerHTML=[[t,'فعّالة','ACTIVE',false,'var(--teal)'],[e,'منتهية','EXPIRED',e>0,'var(--red)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" id="${en==='ACTIVE'?'kIqA':'kIqE'}" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
     +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL30">—</div><div class="ar">تنتهي &lt;30</div><div class="en">EXP &lt;30D</div></div>`
     +`<div class="iqcard"><div class="n" style="color:var(--amber)" id="kIqL60">—</div><div class="ar">تنتهي &lt;60</div><div class="en">EXP &lt;60D</div></div>`
     +[[x,'خروج وعودة','EXIT/RE-ENTRY',x>0,'var(--amber)']].map(([n,ar,en,w,clr])=>`<div class="iqcard"><div class="n" style="color:${w?clr:'var(--teal)'}">${n}</div><div class="ar">${ar}</div><div class="en">${en}</div></div>`).join('')
