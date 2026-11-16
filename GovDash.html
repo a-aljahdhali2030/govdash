@@ -1145,6 +1145,7 @@ const ID_MAP={
    AJ=35 Notes & Action Items col 2
 */
 
+let NOTE_IDX=[32,33,34,35];
 function parseCSV(text){
   /* تحويل النص لصفوف مع دعم الحقول متعددة الأسطر */
   const rows=[];
@@ -1163,6 +1164,10 @@ function parseCSV(text){
   if(cell||cur.length)cur.push(cell),rows.push(cur);
 
   /* تخطّى الصفّين الأولين (هيدر) وابدأ من الصف الثالث */
+  /* أعمدة الملاحظات: تُكتشف من عناوين الشيت (ملاحظات / Notes / Action) بدل رقم ثابت؛ وإلا تُقرأ الأعمدة 32..40 */
+  NOTE_IDX=[];
+  [0,1].forEach(ri=>(rows[ri]||[]).forEach((h,ci)=>{if(ci>=20&&/note|ملاحظ|action|إجراء|اجراء/i.test(h||'')&&!NOTE_IDX.includes(ci))NOTE_IDX.push(ci);}));
+  if(!NOTE_IDX.length)NOTE_IDX=[32,33,34,35,36,37,38,39,40];
   const dataRows=rows.slice(2).filter(r=>r[0]&&r[0].trim()&&r[0].trim()!=='');
 
   function g(row,i){const v=(row[i]||'').trim();return v||'N/A';}
@@ -1171,7 +1176,7 @@ function parseCSV(text){
 
   function getNotes(row){
     const acts=[];
-    [32,33].forEach(idx=>{
+    NOTE_IDX.forEach(idx=>{
       const v=(row[idx]||'').trim();
       if(!v||v.length<4)return;
       v.split('\n').forEach(line=>{
