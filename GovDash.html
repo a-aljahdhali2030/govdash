@@ -678,6 +678,9 @@ function renderEmpTable(data,filter){
 const WP_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQA4zTO_txjQcH_7pNGPlu268K0sRDQzNmH90HLXXUUp_IguopERHOjTQ4TESmTAKTQokMQVw2r6DGw/pub?gid=1459053517&single=true&output=csv';
 let WP_RAW=null;
 
+/* موظفون مستبعدون من كل القوائم (توفي / انتهت علاقته) — بالرقم */
+const EXCLUDED_IDS=new Set(['2422328472']);
+const _notEx=r=>!EXCLUDED_IDS.has(String(r.id||'').replace(/\D/g,''));
 async function fetchWPRaw(){
   try{
     const res=await fetch(WP_CSV_URL+(WP_CSV_URL.includes('?')?'&':'?')+'t='+Date.now());
@@ -689,7 +692,7 @@ async function fetchWPRaw(){
       id:(r[2]||'').trim(),
       exp:(r[3]||'').trim(),
       myDept:(r[4]||'').trim().toLowerCase()==='yes'
-    }));
+    })).filter(_notEx);
   }catch(e){return null;}
 }
 
@@ -876,7 +879,7 @@ async function fetchIqamaRaw(){
       id:(r[2]||'').trim(),
       nat:(r[3]||'').trim(),
       expiry:normIqDate((r[4]||'').trim())
-    }));
+    })).filter(_notEx);
   }catch(e){return null;}
 }
 
